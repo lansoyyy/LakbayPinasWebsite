@@ -358,89 +358,156 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   }
 
   Widget _buildHeroTextAndButtons(bool isMobile) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/icon.png', width: 70, height: 70),
-            const SizedBox(width: 20),
+            isMobile
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Image.asset('assets/images/icon.png',
+                              width: 50, height: 50),
+                          const SizedBox(width: 12),
+                          Flexible(
+                            child: Text(
+                              'Discover Philippines',
+                              style: GoogleFonts.poppins(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Image.asset('assets/images/icon.png',
+                          width: 70, height: 70),
+                      const SizedBox(width: 20),
+                      Text(
+                        'Discover Philippines',
+                        style: GoogleFonts.poppins(
+                          fontSize: 40,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+            const SizedBox(height: 32),
             Text(
-              'Discover Philippines',
+              'Explore 7,641 Islands of Paradise',
               style: GoogleFonts.poppins(
-                fontSize: isMobile ? 32 : 40,
-                fontWeight: FontWeight.w700,
+                fontSize: isMobile ? 28 : 56,
+                fontWeight: FontWeight.w800,
                 color: Colors.white,
+                letterSpacing: 1.5,
                 shadows: [
                   Shadow(
                     color: Colors.black.withOpacity(0.3),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
-        ),
-        const SizedBox(height: 40),
-        Text(
-          'Explore 7,641 Islands of Paradise',
-          style: GoogleFonts.poppins(
-            fontSize: isMobile ? 40 : 56,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-            letterSpacing: 1.5,
-            shadows: [
-              Shadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
+            const SizedBox(height: 20),
+            Text(
+              'Plan your unforgettable journey through the Philippines with curated destinations, from pristine beaches to vibrant festivals.',
+              style: GoogleFonts.poppins(
+                fontSize: isMobile ? 15 : 22,
+                color: Colors.white.withOpacity(0.95),
+                height: 1.6,
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 28),
-        Text(
-          'Plan your unforgettable journey through the Philippines with curated destinations, from pristine beaches to vibrant festivals.',
-          style: GoogleFonts.poppins(
-            fontSize: isMobile ? 18 : 22,
-            color: Colors.white.withOpacity(0.95),
-            height: 1.6,
-          ),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'Your Adventure Awaits!',
-          style: GoogleFonts.poppins(
-            fontSize: isMobile ? 16 : 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.amber[200],
-          ),
-        ),
-        const SizedBox(height: 30),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            _buildStoreButton(
-                store: 'google',
-                onPressed: () async {
-                  launchUrlString(
-                      'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
-                }),
-            const SizedBox(width: 24),
-            _buildStoreButton(
-              store: 'apple',
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => _buildComingSoonDialog(context),
-                );
-              },
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
+            const SizedBox(height: 16),
+            Text(
+              'Your Adventure Awaits!',
+              style: GoogleFonts.poppins(
+                fontSize: isMobile ? 14 : 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.amber[200],
+              ),
+            ),
+            const SizedBox(height: 32),
+            isMobile
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildStoreButton(
+                        store: 'google',
+                        onPressed: () async {
+                          launchUrlString(
+                              'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildStoreButton(
+                        store: 'apple',
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) =>
+                                _buildComingSoonDialog(context),
+                          );
+                        },
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      _buildStoreButton(
+                        store: 'google',
+                        onPressed: () async {
+                          launchUrlString(
+                              'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                        },
+                      ),
+                      const SizedBox(width: 24),
+                      _buildStoreButton(
+                        store: 'apple',
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) =>
+                                _buildComingSoonDialog(context),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -1194,8 +1261,9 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   }
 
   Widget _buildBottomCTA() {
+    final isMobile = MediaQuery.of(context).size.width < 800;
     return Container(
-      height: 400,
+      height: isMobile ? 500 : 400,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1245,28 +1313,51 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                     ),
                   ),
                   const SizedBox(height: 40),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildStoreButton(
-                          store: 'google',
-                          onPressed: () {
-                            launchUrlString(
-                                'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
-                          }),
-                      const SizedBox(width: 24),
-                      _buildStoreButton(
-                        store: 'apple',
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) =>
-                                _buildComingSoonDialog(context),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                  isMobile
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildStoreButton(
+                                store: 'google',
+                                onPressed: () {
+                                  launchUrlString(
+                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                                }),
+                            const SizedBox(height: 16),
+                            _buildStoreButton(
+                              store: 'apple',
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      _buildComingSoonDialog(context),
+                                );
+                              },
+                            ),
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildStoreButton(
+                                store: 'google',
+                                onPressed: () {
+                                  launchUrlString(
+                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                                }),
+                            const SizedBox(width: 24),
+                            _buildStoreButton(
+                              store: 'apple',
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      _buildComingSoonDialog(context),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                 ],
               ),
             ),
