@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lakbay_pinas/utils/colors.dart';
+import 'package:lakbay_pinas/widgets/show.snackbar_widget.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class PromotionalWebsiteScreen extends StatefulWidget {
   const PromotionalWebsiteScreen({super.key});
@@ -20,12 +23,13 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
 
   List<String> images = [
     'mayonvolcano.jpg',
+    'food.jpg',
     'batanes.jpg',
-    'siargao.jpg',
     'maskarafestival.jpg',
-    'sunkencementery.jpg',
-    'onboarding3.jpg',
     'onboarding2.jpg',
+    'wangod.jpg',
+    'siargao.jpg',
+    'culture.jpg',
   ];
   int index = 0;
 
@@ -43,7 +47,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
         const Duration(milliseconds: 400), () => _featuresController.forward());
     Future.delayed(const Duration(milliseconds: 800),
         () => _destinationsController.forward());
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       setState(() {
         index = (index + 1) % images.length;
       });
@@ -141,50 +145,207 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   }
 
   Widget _buildHeroPhoneMockup() {
-    return AnimatedScale(
-      scale: 1.0,
-      duration: const Duration(milliseconds: 800),
-      curve: Curves.easeOutCubic,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Container(
-          width: 340,
-          height: 600,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(48),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
+    return LayoutBuilder(builder: (context, constraints) {
+      final isMobile = MediaQuery.of(context).size.width < 600;
+      final scaleFactor = isMobile ? 0.85 : 1.0;
+      final phoneWidth =
+          380 * scaleFactor; // Slightly wider for iPhone proportions
+      final phoneHeight = 750 * scaleFactor; // Taller to match iPhone 15 Pro
+
+      return AnimatedScale(
+        scale: 1.0,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeOutCubic,
+        child: Padding(
+          padding: EdgeInsets.all(24 * scaleFactor),
+          child: Container(
+            width: phoneWidth,
+            height: phoneHeight,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.grey[300]!.withOpacity(0.9), // Stainless steel effect
+                  Colors.grey[900]!.withOpacity(0.95),
+                ],
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(48),
+              borderRadius: BorderRadius.circular(
+                  40 * scaleFactor), // iPhone 15 Pro radius
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 15 * scaleFactor,
+                  offset: Offset(0, 8 * scaleFactor),
+                ),
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.1),
+                  blurRadius: 5 * scaleFactor,
+                  offset: Offset(-3 * scaleFactor, -3 * scaleFactor),
+                ),
+              ],
+              border: Border.all(
+                color: Colors.grey[400]!.withOpacity(0.8), // Polished edge
+                width: 1.5 * scaleFactor,
+              ),
+            ),
             child: Stack(
               children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 600),
-                  transitionBuilder: (child, animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: ScaleTransition(
-                        scale: Tween<double>(begin: 1.05, end: 1.0)
-                            .animate(animation),
-                        child: child,
+                // Inner screen
+                Positioned(
+                  left: 8 * scaleFactor,
+                  right: 8 * scaleFactor,
+                  top: 8 * scaleFactor,
+                  bottom: 8 * scaleFactor,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(36 * scaleFactor),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.black,
                       ),
-                    );
-                  },
+                      child: Stack(
+                        children: [
+                          // Image carousel
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 600),
+                            transitionBuilder: (child, animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: ScaleTransition(
+                                  scale: Tween<double>(begin: 1.05, end: 1.0)
+                                      .animate(animation),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Container(
+                              key: ValueKey<int>(index),
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                      'assets/images/backgrounds/${images[index]}'),
+                                  fit: BoxFit.cover,
+                                  opacity: 0.95,
+                                ),
+                              ),
+                            ),
+                          ),
+                          // iOS Status bar
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 44 * scaleFactor, // iOS status bar height
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16 * scaleFactor),
+                              color: Colors.black,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  SizedBox(),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.signal_cellular_alt,
+                                          color: Colors.white,
+                                          size: 18 * scaleFactor),
+                                      SizedBox(width: 8 * scaleFactor),
+                                      Icon(Icons.wifi,
+                                          color: Colors.white,
+                                          size: 18 * scaleFactor),
+                                      SizedBox(width: 8 * scaleFactor),
+                                      Icon(Icons.battery_charging_full,
+                                          color: Colors.white,
+                                          size: 18 * scaleFactor),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // iOS Navigation bar
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 44 * scaleFactor,
+                              color: Colors.black.withOpacity(0.7),
+                              child: Center(
+                                child: Container(
+                                  width: 120 * scaleFactor,
+                                  height: 5 * scaleFactor,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.8),
+                                    borderRadius: BorderRadius.circular(
+                                        2.5 * scaleFactor),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // Dynamic Island
+                Positioned(
+                  top: 8 * scaleFactor,
+                  left: phoneWidth * 0.35,
+                  right: phoneWidth * 0.35,
                   child: Container(
-                    key: ValueKey<int>(index),
+                    height: 36 * scaleFactor,
                     decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                            'assets/images/backgrounds/${images[index]}'),
-                        fit: BoxFit.cover,
-                      ),
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(18 * scaleFactor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 5 * scaleFactor,
+                          offset: Offset(0, 2 * scaleFactor),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Left side buttons (volume and mute switch)
+                Positioned(
+                  left: -2 * scaleFactor,
+                  top: phoneHeight * 0.15,
+                  child: Container(
+                    width: 4 * scaleFactor,
+                    height: 60 * scaleFactor,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400], // Aluminum-like
+                      borderRadius: BorderRadius.circular(2 * scaleFactor),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -2 * scaleFactor,
+                  top: phoneHeight * 0.25,
+                  child: Container(
+                    width: 4 * scaleFactor,
+                    height: 30 * scaleFactor,
+                    decoration: BoxDecoration(
+                      color: Colors.orange[400], // Mute switch
+                      borderRadius: BorderRadius.circular(2 * scaleFactor),
+                    ),
+                  ),
+                ),
+                // Right side button (power)
+                Positioned(
+                  right: -2 * scaleFactor,
+                  top: phoneHeight * 0.2,
+                  child: Container(
+                    width: 4 * scaleFactor,
+                    height: 80 * scaleFactor,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(2 * scaleFactor),
                     ),
                   ),
                 ),
@@ -192,8 +353,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildHeroTextAndButtons(bool isMobile) {
@@ -257,13 +418,26 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
             color: Colors.amber[200],
           ),
         ),
-        const SizedBox(height: 56),
+        const SizedBox(height: 30),
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            _buildStoreButton(store: 'google', onPressed: () {}),
+            _buildStoreButton(
+                store: 'google',
+                onPressed: () async {
+                  launchUrlString(
+                      'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                }),
             const SizedBox(width: 24),
-            _buildStoreButton(store: 'apple', onPressed: () {}),
+            _buildStoreButton(
+              store: 'apple',
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => _buildComingSoonDialog(context),
+                );
+              },
+            ),
           ],
         ),
       ],
@@ -1074,9 +1248,23 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildStoreButton(store: 'google', onPressed: () {}),
+                      _buildStoreButton(
+                          store: 'google',
+                          onPressed: () {
+                            launchUrlString(
+                                'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                          }),
                       const SizedBox(width: 24),
-                      _buildStoreButton(store: 'apple', onPressed: () {}),
+                      _buildStoreButton(
+                        store: 'apple',
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) =>
+                                _buildComingSoonDialog(context),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ],
@@ -1084,6 +1272,79 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildComingSoonDialog(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF0D47A1),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.2),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(24),
+              child: const Icon(
+                Icons.apple,
+                color: Colors.white,
+                size: 48,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Coming Soon!',
+              style: GoogleFonts.poppins(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0D47A1),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Discover Philippines is coming soon to the Apple App Store.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                color: Colors.grey[800],
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0D47A1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'OK',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
