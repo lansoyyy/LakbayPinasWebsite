@@ -4,7 +4,7 @@ import 'package:lakbay_pinas/widgets/text_widget.dart';
 class EmptyTextWidget extends StatelessWidget {
   String? caption;
 
-  EmptyTextWidget({this.caption = 'No available data'});
+  EmptyTextWidget({super.key, this.caption = 'No available data'});
 
   @override
   Widget build(BuildContext context) {
