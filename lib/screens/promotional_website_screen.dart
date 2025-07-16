@@ -659,7 +659,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
         return MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
-            onTap: onPressed,
+            onTap: store == 'google' ? onPressed : null,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               padding: EdgeInsets.symmetric(
@@ -710,7 +710,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        store == 'google' ? 'GET IT ON' : 'Download on the',
+                        store == 'google' ? 'GET IT ON' : 'Soon on',
                         style: GoogleFonts.poppins(
                           color: Colors.white.withOpacity(0.9),
                           fontSize: 12 * scaleFactor,
