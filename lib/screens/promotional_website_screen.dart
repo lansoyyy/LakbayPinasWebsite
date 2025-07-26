@@ -598,7 +598,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 store: 'google',
                                 onPressed: () async {
                                   launchUrlString(
-                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                 },
                               ),
                               const SizedBox(height: 20),
@@ -621,7 +621,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 store: 'google',
                                 onPressed: () async {
                                   launchUrlString(
-                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                 },
                               ),
                               const SizedBox(width: 32),
@@ -1547,7 +1547,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 store: 'google',
                                 onPressed: () {
                                   launchUrlString(
-                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                 }),
                             const SizedBox(height: 16),
                             _buildEnhancedStoreButton(
@@ -1569,7 +1569,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 store: 'google',
                                 onPressed: () {
                                   launchUrlString(
-                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverphilippines');
+                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                 }),
                             const SizedBox(width: 24),
                             _buildEnhancedStoreButton(
@@ -1682,7 +1682,31 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
+          // Social Media Icons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildSocialIcon(
+                icon: FontAwesomeIcons.facebook,
+                url: 'https://www.facebook.com/discoverphilippines25',
+                color: const Color(0xFF1877F2),
+              ),
+              const SizedBox(width: 20),
+              _buildSocialIcon(
+                icon: FontAwesomeIcons.instagram,
+                url: 'https://www.instagram.com/_discoverphilippines/#',
+                color: const Color(0xFFE4405F),
+              ),
+              const SizedBox(width: 20),
+              _buildSocialIcon(
+                icon: FontAwesomeIcons.tiktok,
+                url: 'https://www.tiktok.com/@_discoverphilippines',
+                color: const Color(0xFF000000),
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
           AnimatedSlide(
             offset: Offset(0, _destinationsController.value * -0.2),
             duration: const Duration(milliseconds: 1200),
@@ -1698,6 +1722,43 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSocialIcon({
+    required IconData icon,
+    required String url,
+    required Color color,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () async {
+          try {
+            await launchUrlString(url);
+          } catch (e) {
+            // Handle error if URL cannot be launched
+            print('Could not launch $url');
+          }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
       ),
     );
   }
