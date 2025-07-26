@@ -24,7 +24,15 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   late AnimationController _videoController;
   late AnimationController _ctaController;
   late AnimationController _footerController;
+
+  // NEW: Additional controllers for enhanced animations
+  late AnimationController _pulseController;
+  late AnimationController _floatingController;
+  late AnimationController _shimmerController;
+
   late Timer _timer;
+  final ScrollController _pageScrollController = ScrollController();
+  double _scrollOffset = 0.0;
 
   // Animation values
   late Animation<double> _heroFadeAnimation;
@@ -39,6 +47,11 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   late Animation<double> _ctaFadeAnimation;
   late Animation<Offset> _ctaSlideAnimation;
 
+  // NEW: Enhanced animations
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _floatingAnimation;
+  late Animation<double> _shimmerAnimation;
+
   List<String> images = [
     'mayonvolcano.jpg',
     'food.jpg',
@@ -49,12 +62,12 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     'siargao.jpg',
     'culture.jpg',
   ];
+
   int index = 0;
 
   @override
   void initState() {
     super.initState();
-
     // Initialize controllers
     _heroController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 2000));
@@ -70,6 +83,14 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
         vsync: this, duration: const Duration(milliseconds: 1200));
     _footerController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 1000));
+
+    // NEW: Enhanced animation controllers
+    _pulseController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 2000));
+    _floatingController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 3000));
+    _shimmerController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1500));
 
     // Initialize animations
     _heroFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -119,8 +140,23 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     ).animate(
         CurvedAnimation(parent: _ctaController, curve: Curves.easeOutCubic));
 
+    // NEW: Enhanced animations
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    _floatingAnimation = Tween<double>(begin: -8.0, end: 8.0).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
+    );
+    _shimmerAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
+    );
+
     // Start animations
     _heroController.forward();
+    _pulseController.repeat(reverse: true);
+    _floatingController.repeat(reverse: true);
+    _shimmerController.repeat();
+
     Future.delayed(
         const Duration(milliseconds: 800), () => _featuresController.forward());
     Future.delayed(const Duration(milliseconds: 1200),
@@ -133,6 +169,13 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
         const Duration(milliseconds: 2400), () => _footerController.forward());
     Future.delayed(
         const Duration(milliseconds: 1400), () => _scrollController.forward());
+
+    // NEW: Scroll listener for parallax effects
+    _pageScrollController.addListener(() {
+      setState(() {
+        _scrollOffset = _pageScrollController.offset;
+      });
+    });
 
     _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
       setState(() {
@@ -150,6 +193,10 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     _videoController.dispose();
     _ctaController.dispose();
     _footerController.dispose();
+    _pulseController.dispose();
+    _floatingController.dispose();
+    _shimmerController.dispose();
+    _pageScrollController.dispose();
     _timer.cancel();
     super.dispose();
   }
@@ -158,6 +205,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
+        controller: _pageScrollController,
         child: Column(
           children: [
             _buildHeroSection(context),
@@ -169,6 +217,44 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
           ],
         ),
       ),
+      // NEW: Floating action button for scroll to top
+      floatingActionButton: _scrollOffset > 500
+          ? AnimatedOpacity(
+              opacity: _scrollOffset > 500 ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF0D47A1),
+                      const Color(0xFF42A5F5),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0D47A1).withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: FloatingActionButton(
+                  onPressed: () {
+                    _pageScrollController.animateTo(
+                      0,
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  child: const Icon(Icons.keyboard_arrow_up,
+                      color: Colors.white, size: 30),
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -195,28 +281,36 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
           ),
           child: Stack(
             children: [
-              // Animated background pattern
-              Positioned.fill(
-                child: AnimatedBuilder(
-                  animation: _heroController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: 0.08 * _heroController.value,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage(
-                                'assets/images/backgrounds/collage.png'),
-                            fit: BoxFit.cover,
+              // NEW: Enhanced parallax background
+              Transform.translate(
+                offset: Offset(0, _scrollOffset * 0.5),
+                child: Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _heroController,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: 0.08 * _heroController.value,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage(
+                                  'assets/images/backgrounds/collage.png'),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
-              // Floating particles effect
-              ...List.generate(20, (index) => _buildFloatingParticle(index)),
+
+              // Enhanced floating particles effect with varied sizes
+              ...List.generate(25, (index) => _buildFloatingParticle(index)),
+
+              // NEW: Geometric decorative elements
+              _buildGeometricDecorations(),
+
               SafeArea(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 60),
@@ -225,9 +319,19 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const SizedBox(height: 60),
-                            ScaleTransition(
-                              scale: _heroScaleAnimation,
-                              child: _buildHeroPhoneMockup(),
+                            // NEW: Add floating animation to phone mockup
+                            AnimatedBuilder(
+                              animation: _floatingAnimation,
+                              child: ScaleTransition(
+                                scale: _heroScaleAnimation,
+                                child: _buildHeroPhoneMockup(),
+                              ),
+                              builder: (context, child) {
+                                return Transform.translate(
+                                  offset: Offset(0, _floatingAnimation.value),
+                                  child: child,
+                                );
+                              },
                             ),
                             const SizedBox(height: 60),
                             _buildHeroTextAndButtons(isMobile),
@@ -237,9 +341,19 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            ScaleTransition(
-                              scale: _heroScaleAnimation,
-                              child: _buildHeroPhoneMockup(),
+                            // NEW: Add floating animation to phone mockup
+                            AnimatedBuilder(
+                              animation: _floatingAnimation,
+                              child: ScaleTransition(
+                                scale: _heroScaleAnimation,
+                                child: _buildHeroPhoneMockup(),
+                              ),
+                              builder: (context, child) {
+                                return Transform.translate(
+                                  offset: Offset(0, _floatingAnimation.value),
+                                  child: child,
+                                );
+                              },
                             ),
                             const SizedBox(width: 100),
                             Expanded(child: _buildHeroTextAndButtons(isMobile)),
@@ -254,28 +368,36 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     );
   }
 
+  // NEW: Enhanced floating particles with varied sizes and speeds
   Widget _buildFloatingParticle(int index) {
+    final size = (index % 4 + 1) * 1.5;
+    final speed = (index % 3 + 1) * 0.3;
+
     return AnimatedBuilder(
       animation: _heroController,
       builder: (context, child) {
         final progress = _heroController.value;
-        final offset = (index % 3 + 1) * progress;
+        final offset = (index % 3 + 1) * progress * speed;
         return Positioned(
-          left: (index * 50.0) % MediaQuery.of(context).size.width,
-          top: (index * 30.0) % 400 + offset * 20,
+          left: (index * 60.0) % MediaQuery.of(context).size.width,
+          top: (index * 40.0) % 500 + offset * 25,
           child: Opacity(
-            opacity: 0.3 * progress,
+            opacity: (0.15 + (index % 4) * 0.05) * progress,
             child: Container(
-              width: 4,
-              height: 4,
+              width: size,
+              height: size,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: index % 3 == 0
+                    ? Colors.white
+                    : index % 3 == 1
+                        ? Colors.amber[200]
+                        : Colors.blue[200],
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.5),
-                    blurRadius: 8,
-                    spreadRadius: 2,
+                    color: Colors.white.withOpacity(0.3),
+                    blurRadius: 6,
+                    spreadRadius: 1,
                   ),
                 ],
               ),
@@ -283,6 +405,83 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
           ),
         );
       },
+    );
+  }
+
+  // NEW: Geometric decorative elements
+  Widget _buildGeometricDecorations() {
+    return Stack(
+      children: [
+        // Pulsing circle
+        Positioned(
+          top: 120,
+          right: 80,
+          child: AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _pulseAnimation.value,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 2,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        // Floating square
+        Positioned(
+          bottom: 200,
+          left: 100,
+          child: AnimatedBuilder(
+            animation: _floatingController,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(_floatingAnimation.value * 0.5,
+                    _floatingAnimation.value * 0.3),
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.15),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        // Triangle decoration
+        Positioned(
+          top: 300,
+          left: 50,
+          child: AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Transform.rotate(
+                angle: _pulseController.value * 2 * math.pi,
+                child: CustomPaint(
+                  size: const Size(30, 30),
+                  painter: TrianglePainter(
+                    color: Colors.white.withOpacity(0.1),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -329,6 +528,12 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                             blurRadius: 8 * scaleFactor,
                             offset: Offset(-4 * scaleFactor, -4 * scaleFactor),
                           ),
+                          // NEW: Enhanced glow effect
+                          BoxShadow(
+                            color: const Color(0xFF42A5F5).withOpacity(0.2),
+                            blurRadius: 30 * scaleFactor,
+                            offset: Offset(0, 0),
+                          ),
                         ],
                         border: Border.all(
                           color: Colors.grey[400]!.withOpacity(0.9),
@@ -352,10 +557,10 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 ),
                                 child: Stack(
                                   children: [
-                                    // Image carousel with enhanced transitions
+                                    // Enhanced image carousel with shimmer effect
                                     AnimatedSwitcher(
                                       duration:
-                                          const Duration(milliseconds: 800),
+                                          const Duration(milliseconds: 1000),
                                       transitionBuilder: (child, animation) {
                                         return FadeTransition(
                                           opacity: animation,
@@ -370,14 +575,72 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                           ),
                                         );
                                       },
-                                      child: Container(
+                                      child: Stack(
                                         key: ValueKey<int>(index),
-                                        decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                            image: AssetImage(
-                                                'assets/images/backgrounds/${images[index]}'),
-                                            fit: BoxFit.cover,
-                                            opacity: 0.95,
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              image: DecorationImage(
+                                                image: AssetImage(
+                                                    'assets/images/backgrounds/${images[index]}'),
+                                                fit: BoxFit.cover,
+                                                opacity: 0.95,
+                                              ),
+                                            ),
+                                          ),
+                                          // NEW: Subtle overlay gradient
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors: [
+                                                  Colors.transparent,
+                                                  Colors.black.withOpacity(0.2),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // NEW: Image indicators
+                                    Positioned(
+                                      bottom: 20,
+                                      left: 0,
+                                      right: 0,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(
+                                          images.length,
+                                          (dotIndex) => AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            margin: const EdgeInsets.symmetric(
+                                                horizontal: 3),
+                                            width: dotIndex == index ? 20 : 8,
+                                            height: 8,
+                                            decoration: BoxDecoration(
+                                              color: dotIndex == index
+                                                  ? Colors.white
+                                                  : Colors.white
+                                                      .withOpacity(0.4),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              boxShadow: dotIndex == index
+                                                  ? [
+                                                      BoxShadow(
+                                                        color: Colors.white
+                                                            .withOpacity(0.5),
+                                                        blurRadius: 8,
+                                                        offset:
+                                                            const Offset(0, 0),
+                                                      ),
+                                                    ]
+                                                  : null,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -424,6 +687,12 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                     color: Colors.orange.withOpacity(0.3),
                                     blurRadius: 4 * scaleFactor,
                                     offset: Offset(0, 2 * scaleFactor),
+                                  ),
+                                  // NEW: Enhanced glow for special button
+                                  BoxShadow(
+                                    color: Colors.orange.withOpacity(0.4),
+                                    blurRadius: 8 * scaleFactor,
+                                    offset: Offset(0, 0),
                                   ),
                                 ],
                               ),
@@ -480,30 +749,68 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                             children: [
                               Row(
                                 children: [
-                                  AnimatedScale(
-                                    scale: 0.8 + (0.2 * _heroController.value),
-                                    duration: const Duration(milliseconds: 800),
-                                    child: Image.asset('assets/images/icon.png',
-                                        width: 50, height: 50),
+                                  // NEW: Enhanced app icon with pulse animation
+                                  AnimatedBuilder(
+                                    animation: _pulseController,
+                                    builder: (context, child) {
+                                      return Transform.scale(
+                                        scale: _pulseAnimation.value,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.white.withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color:
+                                                  Colors.white.withOpacity(0.2),
+                                              width: 1,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.white
+                                                    .withOpacity(0.1),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Image.asset(
+                                              'assets/images/icon.png',
+                                              width: 50,
+                                              height: 50),
+                                        ),
+                                      );
+                                    },
                                   ),
                                   const SizedBox(width: 16),
                                   Flexible(
-                                    child: Text(
-                                      'Discover Philippines',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                        shadows: [
-                                          Shadow(
-                                            color:
-                                                Colors.black.withOpacity(0.4),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 3),
-                                          ),
+                                    child: ShaderMask(
+                                      shaderCallback: (bounds) =>
+                                          const LinearGradient(
+                                        colors: [
+                                          Colors.white,
+                                          Color(0xFFE3F2FD)
                                         ],
+                                      ).createShader(bounds),
+                                      child: Text(
+                                        'Discover Philippines',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 26,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                          shadows: [
+                                            Shadow(
+                                              color:
+                                                  Colors.black.withOpacity(0.4),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -513,81 +820,200 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                           )
                         : Row(
                             children: [
-                              AnimatedScale(
-                                scale: 0.8 + (0.2 * _heroController.value),
-                                duration: const Duration(milliseconds: 800),
-                                child: Image.asset('assets/images/icon.png',
-                                    width: 80, height: 80),
+                              // NEW: Enhanced app icon with pulse animation
+                              AnimatedBuilder(
+                                animation: _pulseController,
+                                builder: (context, child) {
+                                  return Transform.scale(
+                                    scale: _pulseAnimation.value,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.2),
+                                          width: 2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.white.withOpacity(0.1),
+                                            blurRadius: 15,
+                                            offset: const Offset(0, 0),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Image.asset(
+                                          'assets/images/icon.png',
+                                          width: 80,
+                                          height: 80),
+                                    ),
+                                  );
+                                },
                               ),
                               const SizedBox(width: 24),
-                              Text(
-                                'Discover Philippines',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 48,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withOpacity(0.4),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
+                              ShaderMask(
+                                shaderCallback: (bounds) =>
+                                    const LinearGradient(
+                                  colors: [Colors.white, Color(0xFFE3F2FD)],
+                                ).createShader(bounds),
+                                child: Text(
+                                  'Discover Philippines',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black.withOpacity(0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                     const SizedBox(height: 40),
-                    Text(
-                      'Explore 7,641 Islands of Paradise',
-                      style: GoogleFonts.poppins(
-                        fontSize: isMobile ? 32 : 64,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 1.8,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+
+                    // NEW: Enhanced main title with gradient text
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Colors.white, Color(0xFFFFF3E0)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(bounds),
+                      child: Text(
+                        'Explore 7,641 Islands of Paradise',
+                        style: GoogleFonts.poppins(
+                          fontSize: isMobile ? 32 : 64,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 1.8,
+                          height: 1.1,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // NEW: Enhanced description with glassmorphism container
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Plan your unforgettable journey through the Philippines with curated destinations, from pristine beaches to vibrant festivals.',
-                      style: GoogleFonts.poppins(
-                        fontSize: isMobile ? 16 : 24,
-                        color: Colors.white.withOpacity(0.95),
-                        height: 1.7,
-                        fontWeight: FontWeight.w400,
+                      child: Text(
+                        'Plan your unforgettable journey through the Philippines with curated destinations, from pristine beaches to vibrant festivals.',
+                        style: GoogleFonts.poppins(
+                          fontSize: isMobile ? 16 : 24,
+                          color: Colors.white.withOpacity(0.95),
+                          height: 1.7,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.amber[200]!.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.amber[200]!.withOpacity(0.5),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        'Your Adventure Awaits!',
-                        style: GoogleFonts.poppins(
-                          fontSize: isMobile ? 15 : 22,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.amber[200],
-                        ),
-                      ),
+
+                    // NEW: Enhanced call-to-action badge with shimmer effect
+                    AnimatedBuilder(
+                      animation: _shimmerController,
+                      builder: (context, child) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.amber[200]!.withOpacity(0.3),
+                                Colors.orange[200]!.withOpacity(0.2),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(
+                              color: Colors.amber[200]!.withOpacity(0.6),
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.amber[200]!.withOpacity(0.3),
+                                blurRadius: 15,
+                                offset: const Offset(0, 0),
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.star,
+                                    color: Colors.amber[200],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Your Adventure Awaits!',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isMobile ? 15 : 22,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.amber[200],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              // NEW: Shimmer effect
+                              Positioned.fill(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(25),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment(
+                                            -1.0 + _shimmerAnimation.value,
+                                            0.0),
+                                        end: Alignment(
+                                            1.0 + _shimmerAnimation.value, 0.0),
+                                        colors: [
+                                          Colors.transparent,
+                                          Colors.white.withOpacity(0.2),
+                                          Colors.transparent,
+                                        ],
+                                        stops: const [0.0, 0.5, 1.0],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 40),
                     isMobile
@@ -668,18 +1094,26 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                   minWidth: 220 * scaleFactor, maxWidth: maxWidth),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0288D1),
-                    const Color(0xFF42A5F5).withOpacity(0.9),
-                    const Color(0xFF90CAF9).withOpacity(0.8),
-                  ],
+                  colors: store == 'google'
+                      ? [
+                          const Color(0xFF0288D1),
+                          const Color(0xFF42A5F5).withOpacity(0.9),
+                          const Color(0xFF90CAF9).withOpacity(0.8),
+                        ]
+                      : [
+                          Colors.grey[600]!,
+                          Colors.grey[700]!,
+                          Colors.grey[800]!,
+                        ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(18 * scaleFactor),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
+                    color: store == 'google'
+                        ? const Color(0xFF0288D1).withOpacity(0.4)
+                        : Colors.black.withOpacity(0.25),
                     blurRadius: 15 * scaleFactor,
                     offset: Offset(0, 8 * scaleFactor),
                   ),
@@ -698,12 +1132,20 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    store == 'google'
-                        ? FontAwesomeIcons.googlePlay
-                        : FontAwesomeIcons.apple,
-                    color: Colors.white,
-                    size: 40 * scaleFactor,
+                  // NEW: Enhanced icon container
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      store == 'google'
+                          ? FontAwesomeIcons.googlePlay
+                          : FontAwesomeIcons.apple,
+                      color: Colors.white,
+                      size: 32 * scaleFactor,
+                    ),
                   ),
                   SizedBox(width: 16 * scaleFactor),
                   Column(
@@ -770,20 +1212,26 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                         opacity: _featuresController.value,
                         child: Column(
                           children: [
-                            Text(
-                              'Why Discover Philippines?',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF0D47A1),
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.15),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
+                            // NEW: Enhanced section title with gradient
+                            ShaderMask(
+                              shaderCallback: (bounds) => const LinearGradient(
+                                colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+                              ).createShader(bounds),
+                              child: Text(
+                                'Why Discover Philippines?',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -949,14 +1397,21 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                 boxShadow: [
                   BoxShadow(
                     color: color.withOpacity(hovered ? 0.3 : 0.15),
-                    blurRadius: hovered ? 20 : 12,
-                    offset: Offset(0, hovered ? 12 : 6),
+                    blurRadius: hovered ? 25 : 15,
+                    offset: Offset(0, hovered ? 15 : 8),
                   ),
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
+                  // NEW: Enhanced glow effect
+                  if (hovered)
+                    BoxShadow(
+                      color: color.withOpacity(0.2),
+                      blurRadius: 30,
+                      offset: const Offset(0, 0),
+                    ),
                 ],
                 border: Border.all(
                   color: color.withOpacity(hovered ? 0.3 : 0.1),
@@ -967,22 +1422,27 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    padding: EdgeInsets.all(hovered ? 20 : 16),
+                    padding: EdgeInsets.all(hovered ? 22 : 18),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(hovered ? 0.15 : 0.1),
+                      gradient: LinearGradient(
+                        colors: [
+                          color.withOpacity(hovered ? 0.2 : 0.1),
+                          color.withOpacity(hovered ? 0.15 : 0.08),
+                        ],
+                      ),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: color.withOpacity(hovered ? 0.3 : 0.2),
-                          blurRadius: hovered ? 15 : 8,
+                          color: color.withOpacity(hovered ? 0.4 : 0.2),
+                          blurRadius: hovered ? 20 : 10,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
                     child: AnimatedScale(
-                      scale: hovered ? 1.1 : 1.0,
+                      scale: hovered ? 1.15 : 1.0,
                       duration: const Duration(milliseconds: 200),
-                      child: Icon(icon, color: color, size: hovered ? 70 : 60),
+                      child: Icon(icon, color: color, size: hovered ? 75 : 65),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -1009,11 +1469,22 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                   const SizedBox(height: 20),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    width: hovered ? 60 : 40,
-                    height: 3,
+                    width: hovered ? 80 : 50,
+                    height: 4,
                     decoration: BoxDecoration(
-                      color: color,
+                      gradient: LinearGradient(
+                        colors: [color, color.withOpacity(0.6)],
+                      ),
                       borderRadius: BorderRadius.circular(2),
+                      boxShadow: hovered
+                          ? [
+                              BoxShadow(
+                                color: color.withOpacity(0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 0),
+                              ),
+                            ]
+                          : null,
                     ),
                   ),
                 ],
@@ -1043,19 +1514,25 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'See the App in Action',
-                      style: GoogleFonts.poppins(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0D47A1),
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
+                    // NEW: Enhanced section title
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+                      ).createShader(bounds),
+                      child: Text(
+                        'See the App in Action',
+                        style: GoogleFonts.poppins(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -1068,12 +1545,29 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                       ),
                     ),
                     const SizedBox(height: 28),
-                    Text(
-                      'Join thousands of travelers today!',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF0288D1),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF0288D1).withOpacity(0.1),
+                            const Color(0xFF42A5F5).withOpacity(0.05),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFF0288D1).withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        'Join thousands of travelers today!',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF0288D1),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -1090,6 +1584,12 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 blurRadius: 12,
                                 offset: const Offset(0, 6),
                               ),
+                              // NEW: Enhanced shadow
+                              BoxShadow(
+                                color: const Color(0xFF0288D1).withOpacity(0.1),
+                                blurRadius: 20,
+                                offset: const Offset(0, 0),
+                              ),
                             ],
                             image: const DecorationImage(
                               image: AssetImage(
@@ -1101,21 +1601,37 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                         ),
                         MouseRegion(
                           cursor: SystemMouseCursors.click,
-                          child: AnimatedScale(
-                            scale: 1.0,
-                            duration: const Duration(milliseconds: 300),
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                FontAwesomeIcons.play,
-                                color: Colors.white,
-                                size: 50,
-                              ),
-                            ),
+                          child: AnimatedBuilder(
+                            animation: _pulseController,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: _pulseAnimation.value,
+                                child: Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.black.withOpacity(0.6),
+                                        Colors.black.withOpacity(0.4),
+                                      ],
+                                    ),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 5),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    FontAwesomeIcons.play,
+                                    color: Colors.white,
+                                    size: 50,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -1130,19 +1646,25 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'See the App in Action',
-                            style: GoogleFonts.poppins(
-                              fontSize: 44,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0D47A1),
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
+                          // NEW: Enhanced section title
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+                            ).createShader(bounds),
+                            child: Text(
+                              'See the App in Action',
+                              style: GoogleFonts.poppins(
+                                fontSize: 44,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -1155,12 +1677,29 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                             ),
                           ),
                           const SizedBox(height: 24),
-                          Text(
-                            'Join thousands of travelers today!',
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF0288D1),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF0288D1).withOpacity(0.1),
+                                  const Color(0xFF42A5F5).withOpacity(0.05),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(
+                                color: const Color(0xFF0288D1).withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              'Join thousands of travelers today!',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0288D1),
+                              ),
                             ),
                           ),
                         ],
@@ -1182,6 +1721,13 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                   blurRadius: 12,
                                   offset: const Offset(0, 6),
                                 ),
+                                // NEW: Enhanced shadow
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFF0288D1).withOpacity(0.1),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 0),
+                                ),
                               ],
                               image: const DecorationImage(
                                 image: AssetImage(
@@ -1193,21 +1739,37 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                           ),
                           MouseRegion(
                             cursor: SystemMouseCursors.click,
-                            child: AnimatedScale(
-                              scale: 1.0,
-                              duration: const Duration(milliseconds: 300),
-                              child: Container(
-                                padding: const EdgeInsets.all(24),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.5),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  FontAwesomeIcons.play,
-                                  color: Colors.white,
-                                  size: 60,
-                                ),
-                              ),
+                            child: AnimatedBuilder(
+                              animation: _pulseController,
+                              builder: (context, child) {
+                                return Transform.scale(
+                                  scale: _pulseAnimation.value,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(24),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.black.withOpacity(0.6),
+                                          Colors.black.withOpacity(0.4),
+                                        ],
+                                      ),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 5),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Icon(
+                                      FontAwesomeIcons.play,
+                                      color: Colors.white,
+                                      size: 60,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -1237,25 +1799,31 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
         ),
         child: Column(
           children: [
-            Text(
-              'Top Destinations',
-              style: GoogleFonts.poppins(
-                fontSize: 44,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0D47A1),
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+            // NEW: Enhanced section title
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+              ).createShader(bounds),
+              child: Text(
+                'Top Destinations',
+                style: GoogleFonts.poppins(
+                  fontSize: 44,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             Text(
-              'Explore the Philippines’ most stunning locations',
+              "Explore the Philippines' most stunning locations",
               style: GoogleFonts.poppins(
                 fontSize: 22,
                 color: Colors.grey[800],
@@ -1284,7 +1852,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
       },
       {
         'title': 'Chocolate Hills',
-        'subtitle': 'Bohol’s Natural Wonder',
+        'subtitle': "Bohol's Natural Wonder",
         'description': 'Unique geological formations that turn brown in summer',
         'image': 'assets/images/backgrounds/chocolatehills.jpg',
         'region': 'Central Visayas',
@@ -1292,7 +1860,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
       {
         'title': 'Mayon Volcano',
         'subtitle': 'Perfect Cone Beauty',
-        'description': 'World’s most perfectly formed volcano',
+        'description': "World's most perfectly formed volcano",
         'image': 'assets/images/backgrounds/mayonvolcano.jpg',
         'region': 'Bicol Region',
       },
@@ -1341,6 +1909,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
         'region': 'Cordillera Region',
       },
     ];
+
     final rows = <Widget>[];
     final cardsPerRow = isMobile ? 1 : 3;
     for (int i = 0; i < destinations.length; i += cardsPerRow) {
@@ -1378,110 +1947,133 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     required String image,
     required String region,
   }) {
+    final ValueNotifier<bool> isHovered = ValueNotifier(false);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: AnimatedScale(
-        scale: 1.0,
-        duration: const Duration(milliseconds: 300),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Container(
-                height: 240,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                  image: DecorationImage(
-                    image: AssetImage(image),
-                    fit: BoxFit.cover,
-                    opacity: 0.95,
-                  ),
+      onEnter: (_) => isHovered.value = true,
+      onExit: (_) => isHovered.value = false,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: isHovered,
+        builder: (context, hovered, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            transform: Matrix4.identity()..scale(hovered ? 1.02 : 1.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(hovered ? 0.2 : 0.15),
+                  blurRadius: hovered ? 20 : 12,
+                  offset: Offset(0, hovered ? 10 : 6),
                 ),
-                child: Container(
+                // NEW: Enhanced glow effect on hover
+                if (hovered)
+                  BoxShadow(
+                    color: const Color(0xFF0D47A1).withOpacity(0.1),
+                    blurRadius: 25,
+                    offset: const Offset(0, 0),
+                  ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  height: 240,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
                     ),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.0),
-                        Colors.black.withOpacity(0.4),
-                      ],
+                    image: DecorationImage(
+                      image: AssetImage(image),
+                      fit: BoxFit.cover,
+                      opacity: 0.95,
+                    ),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.0),
+                          Colors.black.withOpacity(0.4),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0D47A1),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        color: Colors.grey[800],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      description,
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        color: Colors.grey[700],
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0D47A1).withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        region,
+                Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
                           color: const Color(0xFF0D47A1),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                      const SizedBox(height: 10),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          color: Colors.grey[800],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        description,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: Colors.grey[700],
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF0D47A1).withOpacity(0.15),
+                              const Color(0xFF42A5F5).withOpacity(0.1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF0D47A1).withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          region,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF0D47A1),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -1503,40 +2095,67 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
       ),
       child: Stack(
         children: [
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0.1,
-              child: Container(
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/backgrounds/collage.png'),
-                    fit: BoxFit.cover,
+          // NEW: Enhanced parallax background
+          Transform.translate(
+            offset: Offset(0, _scrollOffset * 0.3),
+            child: Positioned.fill(
+              child: Opacity(
+                opacity: 0.1,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image:
+                          AssetImage('assets/images/backgrounds/collage.png'),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
+
+          // NEW: Floating geometric shapes
+          ...List.generate(8, (index) => _buildCTAFloatingShape(index)),
+
           Padding(
             padding: const EdgeInsets.all(32),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    'Start Your Philippine Adventure!',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
+                  // NEW: Enhanced CTA title with shimmer effect
+                  AnimatedBuilder(
+                    animation: _shimmerController,
+                    builder: (context, child) {
+                      return ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          begin: Alignment(-1.0 + _shimmerAnimation.value, 0.0),
+                          end: Alignment(1.0 + _shimmerAnimation.value, 0.0),
+                          colors: [
+                            Colors.white,
+                            Colors.white.withOpacity(0.8),
+                            Colors.white,
+                          ],
+                          stops: const [0.0, 0.5, 1.0],
+                        ).createShader(bounds),
+                        child: Text(
+                          'Start Your Philippine Adventure!',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 40),
                   isMobile
@@ -1593,74 +2212,154 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     );
   }
 
+  // NEW: Floating shapes for CTA section
+  Widget _buildCTAFloatingShape(int index) {
+    final size = (index % 3 + 1) * 15.0;
+    final speed = (index % 2 + 1) * 0.4;
+
+    return AnimatedBuilder(
+      animation: _floatingController,
+      builder: (context, child) {
+        return Positioned(
+          left: (index * 80.0) % MediaQuery.of(context).size.width,
+          top: (index * 60.0) % 300 + _floatingAnimation.value * speed,
+          child: Opacity(
+            opacity: 0.1,
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: index % 2 == 0 ? BoxShape.circle : BoxShape.rectangle,
+                borderRadius: index % 2 == 0 ? null : BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildComingSoonDialog(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF0D47A1),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.2),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(24),
-              child: const Icon(
-                Icons.apple,
-                color: Colors.white,
-                size: 48,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Coming Soon!',
-              style: GoogleFonts.poppins(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF0D47A1),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Discover Philippines is coming soon to the Apple App Store.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                color: Colors.grey[800],
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0D47A1),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'OK',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
+      backgroundColor: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              const Color(0xFFF8FBFF),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF0D47A1),
+                      Color(0xFF42A5F5),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(24),
+                child: const Icon(
+                  Icons.apple,
+                  color: Colors.white,
+                  size: 48,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    Color(0xFF0D47A1),
+                    Color(0xFF42A5F5),
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  'Coming Soon!',
+                  style: GoogleFonts.poppins(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Discover Philippines is coming soon to the Apple App Store. Stay tuned for updates!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  color: Colors.grey[800],
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF0D47A1),
+                      Color(0xFF42A5F5),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0D47A1).withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 14),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'OK',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1670,7 +2369,16 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
-      decoration: const BoxDecoration(color: Color(0xFF0D47A1)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF0D47A1),
+            const Color(0xFF1565C0),
+          ],
+        ),
+      ),
       child: Column(
         children: [
           Text(
@@ -1683,7 +2391,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
             ),
           ),
           const SizedBox(height: 30),
-          // Social Media Icons
+          // Enhanced Social Media Icons
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -1731,35 +2439,83 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     required String url,
     required Color color,
   }) {
+    final ValueNotifier<bool> isHovered = ValueNotifier(false);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () async {
-          try {
-            await launchUrlString(url);
-          } catch (e) {
-            // Handle error if URL cannot be launched
-            print('Could not launch $url');
-          }
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
+      onEnter: (_) => isHovered.value = true,
+      onExit: (_) => isHovered.value = false,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: isHovered,
+        builder: (context, hovered, child) {
+          return GestureDetector(
+            onTap: () async {
+              try {
+                await launchUrlString(url);
+              } catch (e) {
+                print('Could not launch $url');
+              }
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: hovered
+                    ? Colors.white.withOpacity(0.2)
+                    : Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withOpacity(hovered ? 0.4 : 0.2),
+                  width: 1,
+                ),
+                boxShadow: hovered
+                    ? [
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 0),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: AnimatedScale(
+                scale: hovered ? 1.1 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
             ),
-          ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 24,
-          ),
-        ),
+          );
+        },
       ),
     );
   }
+}
+
+// NEW: Custom painter for triangle decoration
+class TrianglePainter extends CustomPainter {
+  final Color color;
+
+  TrianglePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(size.width / 2, 0);
+    path.lineTo(0, size.height);
+    path.lineTo(size.width, size.height);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
