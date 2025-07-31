@@ -209,9 +209,11 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
         child: Column(
           children: [
             _buildHeroSection(context),
+            _buildStatsSection(context),
             _buildFeaturesSection(context),
             _buildVideoSection(),
             _buildDestinationsSection(context),
+            _buildTestimonialsSection(context),
             _buildBottomCTA(),
             _buildFooter(),
           ],
@@ -1180,6 +1182,219 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     );
   }
 
+  Widget _buildStatsSection(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+    return Container(
+      padding:
+          EdgeInsets.symmetric(vertical: 100, horizontal: isMobile ? 20 : 60),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0D47A1).withOpacity(0.95),
+            const Color(0xFF1976D2).withOpacity(0.9),
+            const Color(0xFF42A5F5).withOpacity(0.85),
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+          // Promotional heading
+          ShaderMask(
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [Colors.white, Color(0xFFFFF3E0)],
+            ).createShader(bounds),
+            child: Text(
+              'Join Millions of Happy Travelers!',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: isMobile ? 32 : 44,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Discover Philippines is the #1 travel app for exploring the beauty of the Philippines',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: isMobile ? 16 : 20,
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w500,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 60),
+          isMobile
+              ? Column(
+                  children: [
+                    _buildStatCard(
+                      icon: FontAwesomeIcons.download,
+                      number: '500K+',
+                      label: 'App Downloads',
+                      color: Colors.amber[300]!,
+                    ),
+                    const SizedBox(height: 40),
+                    _buildStatCard(
+                      icon: FontAwesomeIcons.mapLocationDot,
+                      number: '7,641',
+                      label: 'Islands to Explore',
+                      color: Colors.green[300]!,
+                    ),
+                    const SizedBox(height: 40),
+                    _buildStatCard(
+                      icon: FontAwesomeIcons.users,
+                      number: '2M+',
+                      label: 'Happy Travelers',
+                      color: Colors.orange[300]!,
+                    ),
+                    const SizedBox(height: 40),
+                    _buildStatCard(
+                      icon: FontAwesomeIcons.star,
+                      number: '4.8★',
+                      label: 'App Store Rating',
+                      color: Colors.pink[300]!,
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: FontAwesomeIcons.download,
+                        number: '500K+',
+                        label: 'App Downloads',
+                        color: Colors.amber[300]!,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: FontAwesomeIcons.mapLocationDot,
+                        number: '7,641',
+                        label: 'Islands to Explore',
+                        color: Colors.green[300]!,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: FontAwesomeIcons.users,
+                        number: '2M+',
+                        label: 'Happy Travelers',
+                        color: Colors.orange[300]!,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: FontAwesomeIcons.star,
+                        number: '4.8★',
+                        label: 'App Store Rating',
+                        color: Colors.pink[300]!,
+                      ),
+                    ),
+                  ],
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required IconData icon,
+    required String number,
+    required String label,
+    required Color color,
+  }) {
+    return AnimatedBuilder(
+      animation: _featuresController,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, 50 * (1 - _featuresController.value)),
+          child: Opacity(
+            opacity: _featuresController.value,
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              margin: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 0),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    number,
+                    style: GoogleFonts.poppins(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildFeaturesSection(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
     return SlideTransition(
@@ -2078,6 +2293,273 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     );
   }
 
+  Widget _buildTestimonialsSection(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+    return Container(
+      padding:
+          EdgeInsets.symmetric(vertical: 120, horizontal: isMobile ? 20 : 60),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFF8FBFF),
+            const Color(0xFFE8F4FD).withOpacity(0.95),
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+          ShaderMask(
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+            ).createShader(bounds),
+            child: Text(
+              'What Travelers Say',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 44,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Real experiences from real travelers using Discover Philippines',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 60),
+          isMobile
+              ? Column(
+                  children: [
+                    _buildTestimonialCard(
+                      name: 'Maria Santos',
+                      location: 'Manila',
+                      rating: 5,
+                      review:
+                          'This app made planning our Palawan trip so easy! The interactive maps and destination guides were incredibly helpful.',
+                      avatar: '👩‍💼',
+                    ),
+                    const SizedBox(height: 30),
+                    _buildTestimonialCard(
+                      name: 'John Rodriguez',
+                      location: 'Cebu',
+                      rating: 5,
+                      review:
+                          'I discovered hidden gems in Bohol thanks to this app. The festival calendar feature helped me time my visit perfectly!',
+                      avatar: '👨',
+                    ),
+                    const SizedBox(height: 30),
+                    _buildTestimonialCard(
+                      name: 'Sarah Kim',
+                      location: 'South Korea',
+                      rating: 5,
+                      review:
+                          'As a foreign traveler, this app was a lifesaver! The local cuisine recommendations were spot on.',
+                      avatar: '👩‍🎨',
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: _buildTestimonialCard(
+                        name: 'Maria Santos',
+                        location: 'Manila',
+                        rating: 5,
+                        review:
+                            'This app made planning our Palawan trip so easy! The interactive maps and destination guides were incredibly helpful.',
+                        avatar: '👩‍💼',
+                      ),
+                    ),
+                    const SizedBox(width: 30),
+                    Expanded(
+                      child: _buildTestimonialCard(
+                        name: 'John Rodriguez',
+                        location: 'Cebu',
+                        rating: 5,
+                        review:
+                            'I discovered hidden gems in Bohol thanks to this app. The festival calendar feature helped me time my visit perfectly!',
+                        avatar: '👨‍🎯',
+                      ),
+                    ),
+                    const SizedBox(width: 30),
+                    Expanded(
+                      child: _buildTestimonialCard(
+                        name: 'Sarah Kim',
+                        location: 'South Korea',
+                        rating: 5,
+                        review:
+                            'As a foreign traveler, this app was a lifesaver! The local cuisine recommendations were spot on.',
+                        avatar: '👩‍🎨',
+                      ),
+                    ),
+                  ],
+                ),
+          const SizedBox(height: 60),
+          // Call-to-action within testimonials
+          Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF0288D1).withOpacity(0.1),
+                  const Color(0xFF42A5F5).withOpacity(0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(
+                color: const Color(0xFF0288D1).withOpacity(0.2),
+                width: 2,
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '🌟 Join 2,000,000+ Happy Travelers',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0288D1),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Download now and start your Philippine adventure today!',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTestimonialCard({
+    required String name,
+    required String location,
+    required int rating,
+    required String review,
+    required String avatar,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(30),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: const Color(0xFF0288D1).withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 0),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF42A5F5).withOpacity(0.2),
+                      const Color(0xFF0288D1).withOpacity(0.1),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    avatar,
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0D47A1),
+                      ),
+                    ),
+                    Text(
+                      location,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: List.generate(
+              5,
+              (index) => Icon(
+                index < rating ? Icons.star : Icons.star_border,
+                color: Colors.amber[600],
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '"$review"',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: Colors.grey[700],
+              height: 1.6,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBottomCTA() {
     final isMobile = MediaQuery.of(context).size.width < 800;
     return Container(
@@ -2139,11 +2621,11 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                           stops: const [0.0, 0.5, 1.0],
                         ).createShader(bounds),
                         child: Text(
-                          'Start Your Philippine Adventure!',
+                          '🚀 Start Your Dream Adventure NOW!',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
-                            fontSize: 48,
-                            fontWeight: FontWeight.w700,
+                            fontSize: isMobile ? 32 : 48,
+                            fontWeight: FontWeight.w900,
                             color: Colors.white,
                             shadows: [
                               Shadow(
