@@ -1,33 +1,111 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Philippine Travel Guide | Discover Philippines</title>
-    <meta name="description" content="Plan your dream Philippine vacation! Discover top islands, beaches, culture, food, and festivals. Your complete travel guide to exploring the Philippines.">
-
-    <!-- Favicon (replace with your logo file, ideally 48x48 or 64x64 PNG) -->
-    <link rel="icon" type="image/png" href="icons/Icon-192.png" />
-
-    <!-- Open Graph for Facebook sharing -->
-    <meta property="og:title" content="Philippine Travel Guide | Discover Philippines" />
-    <meta property="og:description" content="Plan your dream Philippine vacation! Explore world-famous islands, white sand beaches, vibrant festivals, delicious Filipino cuisine, and rich culture. Discover Philippines is your complete travel guide for unforgettable adventures across 7,641 islands." />
-    <meta property="og:image" content="https://discover-philippines.com/icons/Icon-512.png" />
-    <meta property="og:url" content="https://discover-philippines.com" />
-    <meta property="og:type" content="website" />
-
-    <!-- Twitter Card for better Twitter sharing -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Philippine Travel Guide | Discover Philippines" />
-    <meta name="twitter:description" content="Plan your dream Philippine vacation! Explore world-famous islands, white sand beaches, vibrant festivals, delicious Filipino cuisine, and rich culture. Discover Philippines is your complete travel guide for unforgettable adventures across 7,641 islands." />
-    <meta name="twitter:image" content="icons/Icon-512.png" />
-
-    <!-- Flutter and manifest tags (keep these for your app) -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0D47A1">
-    <!-- ...other Flutter tags... -->
-  </head>
-  <body>
-    <script src="main.dart.js" type="application/javascript"></script>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO Meta Tags -->
+  <title>Discover Philippines - Your Ultimate Philippine Travel Guide | 7,641 Islands</title>
+  <meta name="description" content="Plan your dream Philippine vacation! Discover top islands, beaches, culture, food, and festivals. Your complete travel guide to exploring the Philippines with detailed guides for Boracay, Palawan, Bohol, and more.">
+  <meta name="keywords" content="Philippines travel, Philippine islands, Boracay, Palawan, travel guide, Philippines tourism, beaches, culture, festivals, Filipino food">
+  <meta name="author" content="Discover Philippines">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://discover-philippines.com/">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  
+  <!-- Open Graph for Facebook sharing -->
+  <meta property="og:title" content="Discover Philippines - Your Ultimate Philippine Travel Guide">
+  <meta property="og:description" content="Plan your dream Philippine vacation! Explore world-famous islands, white sand beaches, vibrant festivals, delicious Filipino cuisine, and rich culture across 7,641 islands.">
+  <meta property="og:image" content="https://discover-philippines.com/icons/Icon-512.png">
+  <meta property="og:url" content="https://discover-philippines.com">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Discover Philippines">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Discover Philippines - Ultimate Philippine Travel Guide">
+  <meta name="twitter:description" content="Plan your dream Philippine vacation! Explore 7,641 islands with our comprehensive travel guide.">
+  <meta name="twitter:image" content="https://discover-philippines.com/icons/Icon-512.png">
+  
+  <!-- Schema.org structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Discover Philippines",
+    "url": "https://discover-philippines.com",
+    "description": "Your ultimate travel guide to exploring the Philippines",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://discover-philippines.com/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  
+  <!-- Progressive Web App -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0D47A1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Discover Philippines">
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="main.dart.js" as="script">
+  
+  <!-- Base href for proper routing -->
+  <base href="$FLUTTER_BASE_HREF">
+  
+  <style>
+    /* Loading screen styles */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #0D47A1, #42A5F5);
+      color: white;
+      font-family: 'Arial', sans-serif;
+    }
+    #loading .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid white;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading screen -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <h2>Discover Philippines</h2>
+    <p>Loading your travel guide...</p>
+  </div>
+  
+  <!-- Flutter app will replace this -->
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      const loading = document.querySelector('#loading');
+      if (loading) {
+        loading.remove();
+      }
+    });
+  </script>
+  
+  <script src="flutter_bootstrap.js" async></script>
+</body>
 </html>

@@ -1,23 +1,28 @@
 {
-    "name": "lakbay_pinas",
-    "short_name": "lakbay_pinas",
-    "start_url": ".",
+    "name": "Discover Philippines - Ultimate Travel Guide",
+    "short_name": "Discover Philippines",
+    "start_url": "/",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#0D47A1",
+    "theme_color": "#0D47A1",
+    "description": "Your ultimate travel guide to exploring the Philippines. Discover 7,641 islands, beaches, culture, and amazing destinations.",
+    "orientation": "any",
     "prefer_related_applications": false,
+    "categories": ["travel", "lifestyle", "education"],
+    "lang": "en",
+    "scope": "/",
     "icons": [
         {
             "src": "icons/Icon-192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-maskable-192.png",

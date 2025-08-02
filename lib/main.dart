@@ -17,8 +17,40 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Regular',
+        useMaterial3: true,
       ),
-      home: PromotionalWebsiteScreen(),
+      // SEO-friendly routing
+      initialRoute: '/',
+      getPages: [
+        GetPage(
+          name: '/',
+          page: () => const PromotionalWebsiteScreen(),
+          title: 'Discover Philippines - Your Ultimate Philippine Travel Guide',
+        ),
+        GetPage(
+          name: '/home',
+          page: () => const PromotionalWebsiteScreen(),
+          title: 'Home - Discover Philippines',
+        ),
+        GetPage(
+          name: '/about',
+          page: () => const PromotionalWebsiteScreen(),
+          title: 'About - Discover Philippines Travel Guide',
+        ),
+        GetPage(
+          name: '/destinations',
+          page: () => const PromotionalWebsiteScreen(),
+          title: 'Top Philippine Destinations - Discover Philippines',
+        ),
+      ],
+      unknownRoute: GetPage(
+        name: '/404',
+        page: () => const PromotionalWebsiteScreen(),
+        title: '404 - Page Not Found | Discover Philippines',
+      ),
+      enableLog: false, // Disable logs in production
+      defaultTransition: Transition.fade,
+      transitionDuration: const Duration(milliseconds: 300),
     );
   }
 }

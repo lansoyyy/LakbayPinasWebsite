@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://discover-philippines.com/sitemap.xml
+
+# Block access to Flutter build artifacts
+Disallow: /flutter_service_worker.js
+Disallow: /main.dart.js
+Disallow: /flutter.js
+Disallow: /flutter_bootstrap.js
+Disallow: /canvaskit/
+Disallow: /version.json
+
+# Allow important assets
+Allow: /assets/
+Allow: /icons/
+Allow: /manifest.json
+Allow: /favicon.png
