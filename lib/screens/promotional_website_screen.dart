@@ -1138,7 +1138,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                   store: 'google',
                                   onPressed: () async {
                                     if (userLocationData!['country'] ==
-                                        'Philippines') {
+                                            'Philippines' ||
+                                        userLocationData!['country'] == 'PH') {
                                       launchUrlString(
                                           'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                     } else {
@@ -1167,7 +1168,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                   store: 'google',
                                   onPressed: () async {
                                     if (userLocationData!['country'] ==
-                                        'Philippines') {
+                                            'Philippines' ||
+                                        userLocationData!['country'] == 'PH') {
                                       launchUrlString(
                                           'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                     } else {
@@ -1362,13 +1364,13 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
           isMobile
               ? Column(
                   children: [
-                    _buildStatCard(
-                      icon: FontAwesomeIcons.download,
-                      number: '500K+',
-                      label: 'App Downloads',
-                      color: Colors.amber[300]!,
-                    ),
-                    const SizedBox(height: 40),
+                    // _buildStatCard(
+                    //   icon: FontAwesomeIcons.download,
+                    //   number: '500K+',
+                    //   label: 'App Downloads',
+                    //   color: Colors.amber[300]!,
+                    // ),
+                    // const SizedBox(height: 40),
                     _buildStatCard(
                       icon: FontAwesomeIcons.mapLocationDot,
                       number: '7,641',
@@ -1385,7 +1387,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                     const SizedBox(height: 40),
                     _buildStatCard(
                       icon: FontAwesomeIcons.star,
-                      number: '4.8★',
+                      number: '5.0★',
                       label: 'App Store Rating',
                       color: Colors.pink[300]!,
                     ),
@@ -1394,14 +1396,14 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
               : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Expanded(
-                      child: _buildStatCard(
-                        icon: FontAwesomeIcons.download,
-                        number: '500K+',
-                        label: 'App Downloads',
-                        color: Colors.amber[300]!,
-                      ),
-                    ),
+                    // Expanded(
+                    //   child: _buildStatCard(
+                    //     icon: FontAwesomeIcons.download,
+                    //     number: '500K+',
+                    //     label: 'App Downloads',
+                    //     color: Colors.amber[300]!,
+                    //   ),
+                    // ),
                     Expanded(
                       child: _buildStatCard(
                         icon: FontAwesomeIcons.mapLocationDot,
@@ -1421,7 +1423,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                     Expanded(
                       child: _buildStatCard(
                         icon: FontAwesomeIcons.star,
-                        number: '4.8★',
+                        number: '5.0★',
                         label: 'App Store Rating',
                         color: Colors.pink[300]!,
                       ),
@@ -2518,7 +2520,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                         rating: 5,
                         review:
                             'I discovered hidden gems in Bohol thanks to this app. The festival calendar feature helped me time my visit perfectly!',
-                        avatar: '👨‍🎯',
+                        avatar: '👨',
                       ),
                     ),
                     const SizedBox(width: 30),
@@ -2773,7 +2775,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 store: 'google',
                                 onPressed: () {
                                   if (userLocationData!['country'] ==
-                                      'Philippines') {
+                                          'Philippines' ||
+                                      userLocationData!['country'] == 'PH') {
                                     launchUrlString(
                                         'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                   } else {
@@ -2801,7 +2804,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 store: 'google',
                                 onPressed: () {
                                   if (userLocationData!['country'] ==
-                                      'Philippines') {
+                                          'Philippines' ||
+                                      userLocationData!['country'] == 'PH') {
                                     launchUrlString(
                                         'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                   } else {
