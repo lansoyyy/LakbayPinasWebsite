@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,10 +23,9 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   late AnimationController _ctaController;
   late AnimationController _footerController;
 
-  // NEW: Additional controllers for enhanced animations
+  // Optimized animation controllers for enhanced animations
   late AnimationController _pulseController;
   late AnimationController _floatingController;
-  late AnimationController _shimmerController;
 
   late Timer _timer;
   final ScrollController _pageScrollController = ScrollController();
@@ -41,10 +39,9 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   late Animation<Offset> _featuresSlideAnimation;
   late Animation<double> _videoFadeAnimation;
 
-  // NEW: Enhanced animations
+  // Optimized animations
   late Animation<double> _pulseAnimation;
   late Animation<double> _floatingAnimation;
-  late Animation<double> _shimmerAnimation;
 
   List<String> images = [
     'mayonvolcano.jpg',
@@ -83,13 +80,11 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     _footerController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 1000));
 
-    // NEW: Enhanced animation controllers
+    // Optimized animation controllers with longer durations for smoother performance
     _pulseController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 2000));
-    _floatingController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 3000));
-    _shimmerController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1500));
+    _floatingController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 4000));
 
     // Initialize animations
     _heroFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -117,22 +112,18 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
       CurvedAnimation(parent: _videoController, curve: Curves.easeOutCubic),
     );
 
-    // NEW: Enhanced animations
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+    // Optimized parallax effect with reduced intensity
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    _floatingAnimation = Tween<double>(begin: -8.0, end: 8.0).animate(
+    _floatingAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
       CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
-    );
-    _shimmerAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
-      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
     );
 
     // Start animations
     _heroController.forward();
     _pulseController.repeat(reverse: true);
     _floatingController.repeat(reverse: true);
-    _shimmerController.repeat();
 
     Future.delayed(
         const Duration(milliseconds: 800), () => _featuresController.forward());
@@ -147,19 +138,19 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     Future.delayed(
         const Duration(milliseconds: 1400), () => _scrollController.forward());
 
-    // Optimized scroll listener with throttling for better performance
+    // Optimized scroll listener with larger throttling threshold for better performance
     _pageScrollController.addListener(() {
       final newOffset = _pageScrollController.offset;
-      // Throttle scroll updates to reduce setState calls
-      if ((newOffset - _scrollOffset).abs() > 10) {
+      // Increased throttle to 25px to reduce setState calls significantly
+      if ((newOffset - _scrollOffset).abs() > 25) {
         setState(() {
           _scrollOffset = newOffset;
         });
       }
     });
 
-    // Slower carousel for better performance
-    _timer = Timer.periodic(const Duration(seconds: 8), (timer) {
+    // Slower carousel for better performance and user experience
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       setState(() {
         index = (index + 1) % images.length;
       });
@@ -209,7 +200,6 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     _footerController.dispose();
     _pulseController.dispose();
     _floatingController.dispose();
-    _shimmerController.dispose();
     _pageScrollController.dispose();
     _timer.cancel();
     super.dispose();
@@ -301,15 +291,15 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
           ),
           child: Stack(
             children: [
-              // NEW: Enhanced parallax background
+              // Minimal parallax background effect for better performance
               Positioned.fill(
                 child: Transform.translate(
-                  offset: Offset(0, _scrollOffset * 0.5),
+                  offset: Offset(0, _scrollOffset * 0.2),
                   child: AnimatedBuilder(
                     animation: _heroController,
                     builder: (context, child) {
                       return Opacity(
-                        opacity: 0.08 * _heroController.value,
+                        opacity: 0.05 * _heroController.value,
                         child: Container(
                           decoration: const BoxDecoration(
                             image: DecorationImage(
@@ -325,10 +315,10 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                 ),
               ),
 
-              // Reduced particles for better performance (8 instead of 25)
-              ...List.generate(8, (index) => _buildFloatingParticle(index)),
+              // Reduced particles for better performance (4 instead of 8)
+              ...List.generate(4, (index) => _buildFloatingParticle(index)),
 
-              // NEW: Geometric decorative elements
+              // Simplified geometric decorative elements
               _buildGeometricDecorations(),
 
               SafeArea(
@@ -388,38 +378,27 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     );
   }
 
-  // NEW: Enhanced floating particles with varied sizes and speeds
+  // Optimized floating particles with reduced complexity
   Widget _buildFloatingParticle(int index) {
-    final size = (index % 4 + 1) * 1.5;
-    final speed = (index % 3 + 1) * 0.3;
+    final size = (index % 2 + 1) * 1.2;
+    final speed = (index % 2 + 1) * 0.2;
 
     return AnimatedBuilder(
       animation: _heroController,
       builder: (context, child) {
         final progress = _heroController.value;
-        final offset = (index % 3 + 1) * progress * speed;
+        final offset = (index % 2 + 1) * progress * speed;
         return Positioned(
-          left: (index * 60.0) % MediaQuery.of(context).size.width,
-          top: (index * 40.0) % 500 + offset * 25,
+          left: (index * 80.0) % MediaQuery.of(context).size.width,
+          top: (index * 60.0) % 400 + offset * 15,
           child: Opacity(
-            opacity: (0.15 + (index % 4) * 0.05) * progress,
+            opacity: (0.1 + (index % 2) * 0.03) * progress,
             child: Container(
               width: size,
               height: size,
               decoration: BoxDecoration(
-                color: index % 3 == 0
-                    ? Colors.white
-                    : index % 3 == 1
-                        ? Colors.amber[200]
-                        : Colors.blue[200],
+                color: index % 2 == 0 ? Colors.white : Colors.blue[200],
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.3),
-                    blurRadius: 6,
-                    spreadRadius: 1,
-                  ),
-                ],
               ),
             ),
           ),
@@ -428,11 +407,11 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     );
   }
 
-  // NEW: Geometric decorative elements
+  // Simplified geometric decorative elements for better performance
   Widget _buildGeometricDecorations() {
     return Stack(
       children: [
-        // Pulsing circle
+        // Single pulsing circle with reduced intensity
         Positioned(
           top: 120,
           right: 80,
@@ -442,36 +421,10 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
               return Transform.scale(
                 scale: _pulseAnimation.value,
                 child: Container(
-                  width: 80,
-                  height: 80,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        // Floating square
-        Positioned(
-          bottom: 200,
-          left: 100,
-          child: AnimatedBuilder(
-            animation: _floatingController,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(_floatingAnimation.value * 0.5,
-                    _floatingAnimation.value * 0.3),
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: Colors.white.withOpacity(0.15),
                       width: 1,
@@ -482,19 +435,26 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
             },
           ),
         ),
-        // Triangle decoration
+        // Simplified floating square
         Positioned(
-          top: 300,
-          left: 50,
+          bottom: 200,
+          left: 100,
           child: AnimatedBuilder(
-            animation: _pulseController,
+            animation: _floatingController,
             builder: (context, child) {
-              return Transform.rotate(
-                angle: _pulseController.value * 2 * math.pi,
-                child: CustomPaint(
-                  size: const Size(30, 30),
-                  painter: TrianglePainter(
-                    color: Colors.white.withOpacity(0.1),
+              return Transform.translate(
+                offset: Offset(_floatingAnimation.value * 0.3,
+                    _floatingAnimation.value * 0.2),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.1),
+                      width: 1,
+                    ),
                   ),
                 ),
               );
@@ -577,43 +537,26 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 ),
                                 child: Stack(
                                   children: [
-                                    // Optimized image carousel with simple transition
+                                    // Optimized image carousel with minimal transitions
                                     AnimatedSwitcher(
                                       duration:
-                                          const Duration(milliseconds: 600),
+                                          const Duration(milliseconds: 800),
                                       transitionBuilder: (child, animation) {
                                         return FadeTransition(
                                           opacity: animation,
                                           child: child,
                                         );
                                       },
-                                      child: Stack(
+                                      child: Container(
                                         key: ValueKey<int>(index),
-                                        children: [
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                image: AssetImage(
-                                                    'assets/images/backgrounds/${images[index]}'),
-                                                fit: BoxFit.cover,
-                                                opacity: 0.95,
-                                              ),
-                                            ),
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            image: AssetImage(
+                                                'assets/images/backgrounds/${images[index]}'),
+                                            fit: BoxFit.cover,
+                                            opacity: 0.9,
                                           ),
-                                          // NEW: Subtle overlay gradient
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                                colors: [
-                                                  Colors.transparent,
-                                                  Colors.black.withOpacity(0.2),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
                                     ),
 
@@ -1013,82 +956,42 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                       ),
                       const SizedBox(height: 20),
 
-                      // NEW: Enhanced call-to-action badge with shimmer effect
-                      AnimatedBuilder(
-                        animation: _shimmerController,
-                        builder: (context, child) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 12),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.amber[200]!.withOpacity(0.3),
-                                  Colors.orange[200]!.withOpacity(0.2),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(25),
-                              border: Border.all(
-                                color: Colors.amber[200]!.withOpacity(0.6),
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.amber[200]!.withOpacity(0.3),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 0),
-                                ),
-                              ],
+                      // Optimized call-to-action badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.amber[200]!.withOpacity(0.25),
+                              Colors.orange[200]!.withOpacity(0.15),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                            color: Colors.amber[200]!.withOpacity(0.5),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: Colors.amber[200],
+                              size: 18,
                             ),
-                            child: Stack(
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.star,
-                                      color: Colors.amber[200],
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Your Adventure Awaits!',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: isMobile ? 15 : 22,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.amber[200],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                // NEW: Shimmer effect
-                                Positioned.fill(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(25),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment(
-                                              -1.0 + _shimmerAnimation.value,
-                                              0.0),
-                                          end: Alignment(
-                                              1.0 + _shimmerAnimation.value,
-                                              0.0),
-                                          colors: [
-                                            Colors.transparent,
-                                            Colors.white.withOpacity(0.2),
-                                            Colors.transparent,
-                                          ],
-                                          stops: const [0.0, 0.5, 1.0],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 8),
+                            Text(
+                              'Your Adventure Awaits!',
+                              style: GoogleFonts.poppins(
+                                fontSize: isMobile ? 14 : 20,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.amber[200],
+                              ),
                             ),
-                          );
-                        },
+                          ],
+                        ),
                       ),
 
                       // NEW: Country indicator (only show if location is detected)
@@ -2702,8 +2605,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
             ),
           ),
 
-          // NEW: Floating geometric shapes
-          ...List.generate(8, (index) => _buildCTAFloatingShape(index)),
+          // Reduced floating geometric shapes for better performance
+          ...List.generate(4, (index) => _buildCTAFloatingShape(index)),
 
           Padding(
             padding: const EdgeInsets.all(32),
@@ -2711,39 +2614,22 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // NEW: Enhanced CTA title with shimmer effect
-                  AnimatedBuilder(
-                    animation: _shimmerController,
-                    builder: (context, child) {
-                      return ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
-                          begin: Alignment(-1.0 + _shimmerAnimation.value, 0.0),
-                          end: Alignment(1.0 + _shimmerAnimation.value, 0.0),
-                          colors: [
-                            Colors.white,
-                            Colors.white.withOpacity(0.8),
-                            Colors.white,
-                          ],
-                          stops: const [0.0, 0.5, 1.0],
-                        ).createShader(bounds),
-                        child: Text(
-                          '🚀 Start Your Dream Adventure NOW!',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: isMobile ? 32 : 48,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
+                  // Simplified CTA title without complex shimmer effect
+                  Text(
+                    '🚀 Start Your Dream Adventure NOW!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: isMobile ? 32 : 48,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 40),
                   isMobile
@@ -2814,26 +2700,26 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     );
   }
 
-  // NEW: Floating shapes for CTA section
+  // Optimized floating shapes for CTA section
   Widget _buildCTAFloatingShape(int index) {
-    final size = (index % 3 + 1) * 15.0;
-    final speed = (index % 2 + 1) * 0.4;
+    final size = (index % 2 + 1) * 12.0;
+    final speed = (index % 2 + 1) * 0.3;
 
     return AnimatedBuilder(
       animation: _floatingController,
       builder: (context, child) {
         return Positioned(
-          left: (index * 80.0) % MediaQuery.of(context).size.width,
-          top: (index * 60.0) % 300 + _floatingAnimation.value * speed,
+          left: (index * 100.0) % MediaQuery.of(context).size.width,
+          top: (index * 80.0) % 250 + _floatingAnimation.value * speed,
           child: Opacity(
-            opacity: 0.1,
+            opacity: 0.08,
             child: Container(
               width: size,
               height: size,
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: index % 2 == 0 ? BoxShape.circle : BoxShape.rectangle,
-                borderRadius: index % 2 == 0 ? null : BorderRadius.circular(8),
+                borderRadius: index % 2 == 0 ? null : BorderRadius.circular(6),
               ),
             ),
           ),
