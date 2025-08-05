@@ -147,14 +147,19 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     Future.delayed(
         const Duration(milliseconds: 1400), () => _scrollController.forward());
 
-    // NEW: Scroll listener for parallax effects
+    // Optimized scroll listener with throttling for better performance
     _pageScrollController.addListener(() {
-      setState(() {
-        _scrollOffset = _pageScrollController.offset;
-      });
+      final newOffset = _pageScrollController.offset;
+      // Throttle scroll updates to reduce setState calls
+      if ((newOffset - _scrollOffset).abs() > 10) {
+        setState(() {
+          _scrollOffset = newOffset;
+        });
+      }
     });
 
-    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+    // Slower carousel for better performance
+    _timer = Timer.periodic(const Duration(seconds: 8), (timer) {
       setState(() {
         index = (index + 1) % images.length;
       });
@@ -320,8 +325,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                 ),
               ),
 
-              // Enhanced floating particles effect with varied sizes
-              ...List.generate(25, (index) => _buildFloatingParticle(index)),
+              // Reduced particles for better performance (8 instead of 25)
+              ...List.generate(8, (index) => _buildFloatingParticle(index)),
 
               // NEW: Geometric decorative elements
               _buildGeometricDecorations(),
@@ -572,22 +577,14 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 ),
                                 child: Stack(
                                   children: [
-                                    // Enhanced image carousel with shimmer effect
+                                    // Optimized image carousel with simple transition
                                     AnimatedSwitcher(
                                       duration:
-                                          const Duration(milliseconds: 1000),
+                                          const Duration(milliseconds: 600),
                                       transitionBuilder: (child, animation) {
                                         return FadeTransition(
                                           opacity: animation,
-                                          child: ScaleTransition(
-                                            scale: Tween<double>(
-                                                    begin: 1.1, end: 1.0)
-                                                .animate(CurvedAnimation(
-                                              parent: animation,
-                                              curve: Curves.easeOutCubic,
-                                            )),
-                                            child: child,
-                                          ),
+                                          child: child,
                                         );
                                       },
                                       child: Stack(
@@ -1729,8 +1726,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
           valueListenable: isHovered,
           builder: (context, hovered, child) {
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
               width: 340,
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
@@ -1738,22 +1735,15 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(hovered ? 0.3 : 0.15),
-                    blurRadius: hovered ? 25 : 15,
-                    offset: Offset(0, hovered ? 15 : 8),
+                    color: color.withOpacity(hovered ? 0.2 : 0.15),
+                    blurRadius: hovered ? 20 : 15,
+                    offset: Offset(0, hovered ? 12 : 8),
                   ),
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
-                  // NEW: Enhanced glow effect
-                  if (hovered)
-                    BoxShadow(
-                      color: color.withOpacity(0.2),
-                      blurRadius: 30,
-                      offset: const Offset(0, 0),
-                    ),
                 ],
                 border: Border.all(
                   color: color.withOpacity(hovered ? 0.3 : 0.1),
@@ -1763,8 +1753,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
               child: Column(
                 children: [
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    padding: EdgeInsets.all(hovered ? 22 : 18),
+                    duration: const Duration(milliseconds: 200),
+                    padding: EdgeInsets.all(hovered ? 20 : 18),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -1775,17 +1765,13 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: color.withOpacity(hovered ? 0.4 : 0.2),
-                          blurRadius: hovered ? 20 : 10,
+                          color: color.withOpacity(hovered ? 0.3 : 0.2),
+                          blurRadius: hovered ? 15 : 10,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: AnimatedScale(
-                      scale: hovered ? 1.15 : 1.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(icon, color: color, size: hovered ? 75 : 65),
-                    ),
+                    child: Icon(icon, color: color, size: hovered ? 70 : 65),
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -2299,24 +2285,17 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
         valueListenable: isHovered,
         builder: (context, hovered, child) {
           return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            transform: Matrix4.identity()..scale(hovered ? 1.02 : 1.0),
+            duration: const Duration(milliseconds: 200),
+            transform: Matrix4.identity()..scale(hovered ? 1.01 : 1.0),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(hovered ? 0.2 : 0.15),
-                  blurRadius: hovered ? 20 : 12,
-                  offset: Offset(0, hovered ? 10 : 6),
+                  color: Colors.black.withOpacity(hovered ? 0.15 : 0.1),
+                  blurRadius: hovered ? 15 : 12,
+                  offset: Offset(0, hovered ? 8 : 6),
                 ),
-                // NEW: Enhanced glow effect on hover
-                if (hovered)
-                  BoxShadow(
-                    color: const Color(0xFF0D47A1).withOpacity(0.1),
-                    blurRadius: 25,
-                    offset: const Offset(0, 0),
-                  ),
               ],
             ),
             child: Column(

@@ -135,9 +135,7 @@ class GeolocationService {
       return 'Welcome to Discover Philippines!';
     }
 
-    final country = locationData['country'] ?? 'Unknown';
-
-    return 'Welcome to the Philippines from $country!';
+    return 'Welcome to Discover Philippines!';
   }
 
   /// Get currency suggestion based on country
