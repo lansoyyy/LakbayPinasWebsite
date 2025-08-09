@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lakbay_pinas/widgets/touchable_widget.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:video_player/video_player.dart';
 import '../services/geolocation_service.dart';
 
 class PromotionalWebsiteScreen extends StatefulWidget {
@@ -61,10 +63,59 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   bool isLoadingLocation = true;
   String welcomeMessage = 'Welcome to Discover Philippines!';
 
+  late VideoPlayerController _controller;
+  late Future<void> _initializeVideoPlayerFuture;
+
+  bool _isButtonVisible = false; // Tracks button visibility
+  Timer? _hideButtonTimer; // Timer to auto-hide button
+
+  // Start a timer to hide the button after 3 seconds
+  void _startHideButtonTimer() {
+    _hideButtonTimer?.cancel(); // Cancel any existing timer
+    _hideButtonTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _isButtonVisible = false;
+        });
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     // Initialize controllers
+
+    super.initState();
+
+    _controller = VideoPlayerController.asset('assets/images/video.mp4');
+    _initializeVideoPlayerFuture = _controller.initialize().catchError((error) {
+      print("Error initializing video: $error");
+      // Handle CORS or other errors
+    });
+
+    _controller.setLooping(true);
+
+    // Initialize animations (as per your original setup)
+    _videoController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _videoFadeAnimation = CurvedAnimation(
+      parent: _videoController,
+      curve: Curves.easeOut,
+    );
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    _videoController.forward();
+    _pulseController.repeat(reverse: true);
+    _controller.setLooping(true); // Optional: Loop the video
+
     _heroController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 2000));
     _featuresController = AnimationController(
@@ -191,6 +242,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
 
   @override
   void dispose() {
+    _controller.dispose();
     _heroController.dispose();
     _featuresController.dispose();
     _destinationsController.dispose();
@@ -202,6 +254,10 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     _floatingController.dispose();
     _pageScrollController.dispose();
     _timer.cancel();
+    _hideButtonTimer?.cancel();
+    _controller.dispose();
+    _videoController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -1745,7 +1801,6 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // NEW: Enhanced section title
                     ShaderMask(
                       shaderCallback: (bounds) => const LinearGradient(
                         colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
@@ -1802,70 +1857,100 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                       ),
                     ),
                     const SizedBox(height: 32),
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          height: 320,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
-                                blurRadius: 12,
-                                offset: const Offset(0, 6),
-                              ),
-                              // NEW: Enhanced shadow
-                              BoxShadow(
-                                color: const Color(0xFF0288D1).withOpacity(0.1),
-                                blurRadius: 20,
-                                offset: const Offset(0, 0),
-                              ),
-                            ],
-                            image: const DecorationImage(
-                              image: AssetImage(
-                                  'assets/images/backgrounds/boracay.jpg'),
-                              fit: BoxFit.cover,
-                              opacity: 0.8,
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            height: 500,
+                            child: FutureBuilder(
+                              future: _initializeVideoPlayerFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.done) {
+                                  if (snapshot.error != null) {
+                                    return Text(
+                                        'Error loading video: ${snapshot.error}');
+                                  }
+                                  return AspectRatio(
+                                    aspectRatio: _controller.value.aspectRatio,
+                                    child: VideoPlayer(_controller),
+                                  );
+                                } else {
+                                  return CircularProgressIndicator();
+                                }
+                              },
                             ),
                           ),
-                        ),
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: AnimatedBuilder(
-                            animation: _pulseController,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scale: _pulseAnimation.value,
-                                child: Container(
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.black.withOpacity(0.6),
-                                        Colors.black.withOpacity(0.4),
-                                      ],
-                                    ),
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.3),
-                                        blurRadius: 15,
-                                        offset: const Offset(0, 5),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    FontAwesomeIcons.play,
-                                    color: Colors.white,
-                                    size: 50,
-                                  ),
-                                ),
-                              );
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            onEnter: (_) {
+                              setState(() {
+                                _isButtonVisible = true;
+                              });
+                              _startHideButtonTimer();
                             },
+                            onExit: (_) {
+                              setState(() {
+                                _isButtonVisible = false;
+                              });
+                              _hideButtonTimer?.cancel();
+                            },
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isButtonVisible = true;
+                                  if (_controller.value.isPlaying) {
+                                    _controller.pause();
+                                  } else {
+                                    _controller.play();
+                                  }
+                                });
+                                _startHideButtonTimer();
+                              },
+                              child: AnimatedOpacity(
+                                opacity: _isButtonVisible ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 300),
+                                child: AnimatedBuilder(
+                                  animation: _pulseController,
+                                  builder: (context, child) {
+                                    return Transform.scale(
+                                      scale: _pulseAnimation.value,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(24),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.black.withOpacity(0.6),
+                                              Colors.black.withOpacity(0.4),
+                                            ],
+                                          ),
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.black.withOpacity(0.3),
+                                              blurRadius: 15,
+                                              offset: const Offset(0, 5),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          _controller.value.isPlaying
+                                              ? FontAwesomeIcons.pause
+                                              : FontAwesomeIcons.play,
+                                          color: Colors.white,
+                                          size: 60,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 )
@@ -1877,7 +1962,6 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // NEW: Enhanced section title
                           ShaderMask(
                             shaderCallback: (bounds) => const LinearGradient(
                               colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
@@ -1943,64 +2027,91 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                         alignment: Alignment.center,
                         children: [
                           Container(
-                            height: 380,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6),
-                                ),
-                                // NEW: Enhanced shadow
-                                BoxShadow(
-                                  color:
-                                      const Color(0xFF0288D1).withOpacity(0.1),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 0),
-                                ),
-                              ],
-                              image: const DecorationImage(
-                                image: AssetImage(
-                                    'assets/images/backgrounds/boracay.jpg'),
-                                fit: BoxFit.cover,
-                                opacity: 0.8,
-                              ),
+                            height: 800,
+                            child: FutureBuilder(
+                              future: _initializeVideoPlayerFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.done) {
+                                  if (snapshot.error != null) {
+                                    return Text(
+                                        'Error loading video: ${snapshot.error}');
+                                  }
+                                  return AspectRatio(
+                                    aspectRatio: _controller.value.aspectRatio,
+                                    child: VideoPlayer(_controller),
+                                  );
+                                } else {
+                                  return CircularProgressIndicator();
+                                }
+                              },
                             ),
                           ),
                           MouseRegion(
                             cursor: SystemMouseCursors.click,
-                            child: AnimatedBuilder(
-                              animation: _pulseController,
-                              builder: (context, child) {
-                                return Transform.scale(
-                                  scale: _pulseAnimation.value,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(24),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.black.withOpacity(0.6),
-                                          Colors.black.withOpacity(0.4),
-                                        ],
-                                      ),
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.3),
-                                          blurRadius: 15,
-                                          offset: const Offset(0, 5),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Icon(
-                                      FontAwesomeIcons.play,
-                                      color: Colors.white,
-                                      size: 60,
-                                    ),
-                                  ),
-                                );
+                            onEnter: (_) {
+                              setState(() {
+                                _isButtonVisible = true;
+                              });
+                              _startHideButtonTimer();
+                            },
+                            onExit: (_) {
+                              setState(() {
+                                _isButtonVisible = false;
+                              });
+                              _hideButtonTimer?.cancel();
+                            },
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isButtonVisible = true;
+                                  if (_controller.value.isPlaying) {
+                                    _controller.pause();
+                                  } else {
+                                    _controller.play();
+                                  }
+                                });
+                                _startHideButtonTimer();
                               },
+                              child: AnimatedOpacity(
+                                opacity: _isButtonVisible ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 300),
+                                child: AnimatedBuilder(
+                                  animation: _pulseController,
+                                  builder: (context, child) {
+                                    return Transform.scale(
+                                      scale: _pulseAnimation.value,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(24),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.black.withOpacity(0.6),
+                                              Colors.black.withOpacity(0.4),
+                                            ],
+                                          ),
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.black.withOpacity(0.3),
+                                              blurRadius: 15,
+                                              offset: const Offset(0, 5),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          _controller.value.isPlaying
+                                              ? FontAwesomeIcons.pause
+                                              : FontAwesomeIcons.play,
+                                          color: Colors.white,
+                                          size: 60,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ],
