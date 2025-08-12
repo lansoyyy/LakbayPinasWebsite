@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Redirecting…</title>
+    <meta http-equiv="refresh" content="0; URL=/index.html">
+    <script>
+      // Preserve the path for SPA routing when possible
+      (function() {
+        var redirectTo = '/index.html';
+        var loc = window.location;
+        // If hosting supports passing the path via query/hash, adjust as needed
+        // For GitHub Pages, we can reconstruct a client-side redirect
+        var newUrl = redirectTo + loc.search + loc.hash;
+        window.location.replace(newUrl);
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting…</p>
+  </body>
+</html>

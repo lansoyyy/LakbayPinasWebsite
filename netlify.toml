@@ -1,0 +1,9 @@
+[build]
+  publish = "build/web"
+  command = "flutter build web --release --web-renderer=html"
+
+# SPA redirect to index.html for all routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
