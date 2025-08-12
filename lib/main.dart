@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:get/get.dart';
 import 'package:lakbay_pinas/screens/promotional_website_screen.dart';
 
 void main() {
+  // Remove hash (#) from Flutter web URLs for better SEO
+  setUrlStrategy(PathUrlStrategy());
   runApp(const MyApp());
 }
 

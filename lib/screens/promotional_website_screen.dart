@@ -18,12 +18,7 @@ class PromotionalWebsiteScreen extends StatefulWidget {
 class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     with TickerProviderStateMixin {
   late AnimationController _heroController;
-  late AnimationController _featuresController;
-  late AnimationController _destinationsController;
-  late AnimationController _scrollController;
-  late AnimationController _videoController;
-  late AnimationController _ctaController;
-  late AnimationController _footerController;
+  // Removed extra animation controllers for better performance
 
   // Optimized animation controllers for enhanced animations
   late AnimationController _pulseController;
@@ -32,14 +27,13 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   late Timer _timer;
   final ScrollController _pageScrollController = ScrollController();
   double _scrollOffset = 0.0;
+  bool _scrollUpdateScheduled = false; // throttle flag to reduce setState calls
 
   // Animation values
   late Animation<double> _heroFadeAnimation;
   late Animation<Offset> _heroSlideAnimation;
   late Animation<double> _heroScaleAnimation;
-  late Animation<double> _featuresFadeAnimation;
-  late Animation<Offset> _featuresSlideAnimation;
-  late Animation<double> _videoFadeAnimation;
+  // Removed extra animations for better performance
 
   // Optimized animations
   late Animation<double> _pulseAnimation;
@@ -86,8 +80,6 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     super.initState();
     // Initialize controllers
 
-    super.initState();
-
     _controller = VideoPlayerController.asset('assets/images/video.mp4');
     _initializeVideoPlayerFuture = _controller.initialize().catchError((error) {
       print("Error initializing video: $error");
@@ -96,40 +88,11 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
 
     _controller.setLooping(true);
 
-    // Initialize animations (as per your original setup)
-    _videoController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
-    _videoFadeAnimation = CurvedAnimation(
-      parent: _videoController,
-      curve: Curves.easeOut,
-    );
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-    _videoController.forward();
-    _pulseController.repeat(reverse: true);
-    _controller.setLooping(true); // Optional: Loop the video
+    // Simplified initialization
 
     _heroController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 2000));
-    _featuresController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1500));
-    _destinationsController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1500));
-    _scrollController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1000));
-    _videoController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1200));
-    _ctaController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1200));
-    _footerController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1000));
+    // Removed unused animation controllers for better performance
 
     // Optimized animation controllers with longer durations for smoother performance
     _pulseController = AnimationController(
@@ -150,18 +113,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
       CurvedAnimation(parent: _heroController, curve: Curves.elasticOut),
     );
 
-    _featuresFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _featuresController, curve: Curves.easeOutCubic),
-    );
-    _featuresSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-        parent: _featuresController, curve: Curves.easeOutCubic));
-
-    _videoFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _videoController, curve: Curves.easeOutCubic),
-    );
+    // Removed unused animation initializations
 
     // Optimized parallax effect with reduced intensity
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
@@ -176,32 +128,27 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     _pulseController.repeat(reverse: true);
     _floatingController.repeat(reverse: true);
 
-    Future.delayed(
-        const Duration(milliseconds: 800), () => _featuresController.forward());
-    Future.delayed(const Duration(milliseconds: 1200),
-        () => _destinationsController.forward());
-    Future.delayed(
-        const Duration(milliseconds: 1600), () => _videoController.forward());
-    Future.delayed(
-        const Duration(milliseconds: 2000), () => _ctaController.forward());
-    Future.delayed(
-        const Duration(milliseconds: 2400), () => _footerController.forward());
-    Future.delayed(
-        const Duration(milliseconds: 1400), () => _scrollController.forward());
+    // Removed delayed animation starts for better performance
 
     // Optimized scroll listener with larger throttling threshold for better performance
     _pageScrollController.addListener(() {
       final newOffset = _pageScrollController.offset;
-      // Increased throttle to 25px to reduce setState calls significantly
-      if ((newOffset - _scrollOffset).abs() > 25) {
-        setState(() {
-          _scrollOffset = newOffset;
+      // Increased threshold and schedule updates to next frame to reduce rebuilds
+      if ((newOffset - _scrollOffset).abs() > 25 && !_scrollUpdateScheduled) {
+        _scrollUpdateScheduled = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() {
+            _scrollOffset = _pageScrollController.offset;
+          });
+          _scrollUpdateScheduled = false;
         });
       }
     });
 
     // Slower carousel for better performance and user experience
     _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (!mounted) return;
       setState(() {
         index = (index + 1) % images.length;
       });
@@ -210,6 +157,20 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     // NEW: Get user's country on app start
     _detectUserCountry();
   }
+
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   // Precache large background assets to avoid first-frame jank
+  //   precacheImage(
+  //     const AssetImage('assets/images/backgrounds/collage.png'),
+  //     context,
+  //   );
+  //   precacheImage(
+  //     const AssetImage('assets/images/backgrounds/pattern.png'),
+  //     context,
+  //   );
+  // }
 
   // NEW: Method to detect user's country
   Future<void> _detectUserCountry() async {
@@ -244,20 +205,13 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   void dispose() {
     _controller.dispose();
     _heroController.dispose();
-    _featuresController.dispose();
-    _destinationsController.dispose();
-    _scrollController.dispose();
-    _videoController.dispose();
-    _ctaController.dispose();
-    _footerController.dispose();
+    // Removed dispose calls for deleted controllers
     _pulseController.dispose();
     _floatingController.dispose();
     _pageScrollController.dispose();
     _timer.cancel();
     _hideButtonTimer?.cancel();
-    _controller.dispose();
-    _videoController.dispose();
-    _pulseController.dispose();
+    // Removed duplicate dispose calls
     super.dispose();
   }
 
@@ -270,14 +224,47 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
             controller: _pageScrollController,
             child: Column(
               children: [
-                _buildHeroSection(context),
-                _buildStatsSection(context),
-                _buildFeaturesSection(context),
-                _buildVideoSection(),
-                _buildDestinationsSection(context),
-                _buildTestimonialsSection(context),
-                _buildBottomCTA(),
-                _buildFooter(),
+                Semantics(
+                  container: true,
+                  header: true,
+                  label: 'Hero section: Discover Philippines introduction',
+                  child: _buildHeroSection(context),
+                ),
+                Semantics(
+                  container: true,
+                  label: 'Travel statistics and highlights',
+                  child: _buildStatsSection(context),
+                ),
+                Semantics(
+                  container: true,
+                  label: 'App features overview',
+                  child: _buildFeaturesSection(context),
+                ),
+                Semantics(
+                  container: true,
+                  label: 'Video demo section',
+                  child: _buildVideoSection(),
+                ),
+                Semantics(
+                  container: true,
+                  label: 'Top destinations in the Philippines',
+                  child: _buildDestinationsSection(context),
+                ),
+                Semantics(
+                  container: true,
+                  label: 'Traveler testimonials and reviews',
+                  child: _buildTestimonialsSection(context),
+                ),
+                Semantics(
+                  container: true,
+                  label: 'Call to action: Get the app or start exploring',
+                  child: _buildBottomCTA(),
+                ),
+                Semantics(
+                  container: true,
+                  label: 'Footer with company info and social links',
+                  child: _buildFooter(),
+                ),
               ],
             ),
           ),
@@ -325,7 +312,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   }
 
   Widget _buildHeroSection(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final size = MediaQuery.of(context).size;
+    final isMobile = size.width < 800;
     return SlideTransition(
       position: _heroSlideAnimation,
       child: FadeTransition(
@@ -348,31 +336,34 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
           child: Stack(
             children: [
               // Minimal parallax background effect for better performance
-              Positioned.fill(
-                child: Transform.translate(
-                  offset: Offset(0, _scrollOffset * 0.2),
-                  child: AnimatedBuilder(
-                    animation: _heroController,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: 0.05 * _heroController.value,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage(
-                                  'assets/images/backgrounds/collage.png'),
-                              fit: BoxFit.cover,
+              RepaintBoundary(
+                child: Positioned.fill(
+                  child: Transform.translate(
+                    offset: Offset(0, _scrollOffset * 0.2),
+                    child: AnimatedBuilder(
+                      animation: _heroController,
+                      builder: (context, child) {
+                        return Opacity(
+                          opacity: 0.05 * _heroController.value,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              image: DecorationImage(
+                                image: AssetImage(
+                                    'assets/images/backgrounds/collage.png'),
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
 
               // Reduced particles for better performance (4 instead of 8)
-              ...List.generate(4, (index) => _buildFloatingParticle(index)),
+              ...List.generate(
+                  4, (index) => _buildFloatingParticle(index, size.width)),
 
               // Simplified geometric decorative elements
               _buildGeometricDecorations(),
@@ -386,18 +377,20 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                           children: [
                             const SizedBox(height: 60),
                             // NEW: Add floating animation to phone mockup
-                            AnimatedBuilder(
-                              animation: _floatingAnimation,
-                              child: ScaleTransition(
-                                scale: _heroScaleAnimation,
-                                child: _buildHeroPhoneMockup(),
+                            RepaintBoundary(
+                              child: AnimatedBuilder(
+                                animation: _floatingAnimation,
+                                child: ScaleTransition(
+                                  scale: _heroScaleAnimation,
+                                  child: _buildHeroPhoneMockup(),
+                                ),
+                                builder: (context, child) {
+                                  return Transform.translate(
+                                    offset: Offset(0, _floatingAnimation.value),
+                                    child: child,
+                                  );
+                                },
                               ),
-                              builder: (context, child) {
-                                return Transform.translate(
-                                  offset: Offset(0, _floatingAnimation.value),
-                                  child: child,
-                                );
-                              },
                             ),
                             const SizedBox(height: 60),
                             _buildHeroTextAndButtons(isMobile),
@@ -435,7 +428,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
   }
 
   // Optimized floating particles with reduced complexity
-  Widget _buildFloatingParticle(int index) {
+  Widget _buildFloatingParticle(int index, double screenWidth) {
     final size = (index % 2 + 1) * 1.2;
     final speed = (index % 2 + 1) * 0.2;
 
@@ -445,7 +438,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
         final progress = _heroController.value;
         final offset = (index % 2 + 1) * progress * speed;
         return Positioned(
-          left: (index * 80.0) % MediaQuery.of(context).size.width,
+          left: (index * 80.0) % screenWidth,
           top: (index * 60.0) % 400 + offset * 15,
           child: Opacity(
             opacity: (0.1 + (index % 2) * 0.03) * progress,
@@ -1397,275 +1390,242 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     required String label,
     required Color color,
   }) {
-    return AnimatedBuilder(
-      animation: _featuresController,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, 50 * (1 - _featuresController.value)),
-          child: Opacity(
-            opacity: _featuresController.value,
-            child: Container(
-              padding: const EdgeInsets.all(32),
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
+    return Container(
+      padding: const EdgeInsets.all(32),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 0),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 0),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      icon,
-                      color: color,
-                      size: 40,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    number,
-                    style: GoogleFonts.poppins(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 40,
             ),
           ),
-        );
-      },
+          const SizedBox(height: 20),
+          Text(
+            number,
+            style: GoogleFonts.poppins(
+              fontSize: 36,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildFeaturesSection(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
-    return SlideTransition(
-        position: _featuresSlideAnimation,
-        child: FadeTransition(
-          opacity: _featuresFadeAnimation,
-          child: Container(
-            padding: EdgeInsets.symmetric(
-                vertical: 140, horizontal: isMobile ? 20 : 60),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFFF8FBFF),
-                  const Color(0xFFE8F4FD).withOpacity(0.95),
-                  const Color(0xFFF0F8FF).withOpacity(0.9),
-                ],
-                stops: const [0.0, 0.5, 1.0],
-              ),
-            ),
-            child: Column(
-              children: [
-                AnimatedBuilder(
-                  animation: _featuresController,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(0, 30 * (1 - _featuresController.value)),
-                      child: Opacity(
-                        opacity: _featuresController.value,
-                        child: Column(
-                          children: [
-                            // NEW: Enhanced section title with gradient
-                            ShaderMask(
-                              shaderCallback: (bounds) => const LinearGradient(
-                                colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
-                              ).createShader(bounds),
-                              child: Text(
-                                'Why Discover Philippines?',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 48,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withOpacity(0.15),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            Text(
-                              'Discover features to make your trip unforgettable',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontSize: 24,
-                                color: Colors.grey[800],
-                                fontWeight: FontWeight.w500,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
+    return Container(
+      padding:
+          EdgeInsets.symmetric(vertical: 140, horizontal: isMobile ? 20 : 60),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFF8FBFF),
+            const Color(0xFFE8F4FD).withOpacity(0.95),
+            const Color(0xFFF0F8FF).withOpacity(0.9),
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ),
+      ),
+      child: Column(
+        children: [
+          Column(
+            children: [
+              // NEW: Enhanced section title with gradient
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+                ).createShader(bounds),
+                child: Text(
+                  'Why Discover Philippines?',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 80),
-                isMobile
-                    ? Column(
-                        children: [
-                          _buildFeatureCard(
-                            icon: FontAwesomeIcons.mapLocationDot,
-                            title: 'Interactive Maps',
-                            description:
-                                'Navigate with detailed maps and real-time location.',
-                            color: const Color(0xFF0288D1),
-                          ),
-                          const SizedBox(height: 32),
-                          _buildFeatureCard(
-                            icon: FontAwesomeIcons.heart,
-                            title: 'Save Favorites',
-                            description:
-                                'Bookmark destinations for easy planning.',
-                            color: const Color(0xFFD81B60),
-                          ),
-                          const SizedBox(height: 32),
-                          _buildFeatureCard(
-                            icon: FontAwesomeIcons.magnifyingGlass,
-                            title: 'Smart Search',
-                            description:
-                                'Find destinations with powerful filters.',
-                            color: const Color(0xFF388E3C),
-                          ),
-                          const SizedBox(height: 32),
-                          _buildFeatureCard(
-                            icon: FontAwesomeIcons.earthAsia,
-                            title: 'Region Explorer',
-                            description:
-                                'Explore 17 regions with detailed guides.',
-                            color: const Color(0xFFFBC02D),
-                          ),
-                          const SizedBox(height: 32),
-                          _buildFeatureCard(
-                            icon: FontAwesomeIcons.calendar,
-                            title: 'Festival Calendar',
-                            description:
-                                'Plan visits around vibrant festivals.',
-                            color: const Color(0xFF8E24AA),
-                          ),
-                          const SizedBox(height: 32),
-                          _buildFeatureCard(
-                            icon: FontAwesomeIcons.utensils,
-                            title: 'Local Cuisine',
-                            description: 'Discover authentic Filipino dining.',
-                            color: const Color(0xFFE64A19),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildFeatureCard(
-                                icon: FontAwesomeIcons.mapLocationDot,
-                                title: 'Interactive Maps',
-                                description:
-                                    'Navigate with detailed maps and real-time location.',
-                                color: const Color(0xFF0288D1),
-                              ),
-                              const SizedBox(width: 40),
-                              _buildFeatureCard(
-                                icon: FontAwesomeIcons.heart,
-                                title: 'Save Favorites',
-                                description:
-                                    'Bookmark destinations for easy planning.',
-                                color: const Color(0xFFD81B60),
-                              ),
-                              const SizedBox(width: 40),
-                              _buildFeatureCard(
-                                icon: FontAwesomeIcons.magnifyingGlass,
-                                title: 'Smart Search',
-                                description:
-                                    'Find destinations with powerful filters.',
-                                color: const Color(0xFF388E3C),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 60),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildFeatureCard(
-                                icon: FontAwesomeIcons.earthAsia,
-                                title: 'Region Explorer',
-                                description:
-                                    'Explore 17 regions with detailed guides.',
-                                color: const Color(0xFFFBC02D),
-                              ),
-                              const SizedBox(width: 40),
-                              _buildFeatureCard(
-                                icon: FontAwesomeIcons.calendar,
-                                title: 'Festival Calendar',
-                                description:
-                                    'Plan visits around vibrant festivals.',
-                                color: const Color(0xFF8E24AA),
-                              ),
-                              const SizedBox(width: 40),
-                              _buildFeatureCard(
-                                icon: FontAwesomeIcons.utensils,
-                                title: 'Local Cuisine',
-                                description:
-                                    'Discover authentic Filipino dining.',
-                                color: const Color(0xFFE64A19),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Discover features to make your trip unforgettable',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
+            ],
           ),
-        ));
+          const SizedBox(height: 80),
+          isMobile
+              ? Column(
+                  children: [
+                    _buildFeatureCard(
+                      icon: FontAwesomeIcons.mapLocationDot,
+                      title: 'Interactive Maps',
+                      description:
+                          'Navigate with detailed maps and real-time location.',
+                      color: const Color(0xFF0288D1),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildFeatureCard(
+                      icon: FontAwesomeIcons.heart,
+                      title: 'Save Favorites',
+                      description: 'Bookmark destinations for easy planning.',
+                      color: const Color(0xFFD81B60),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildFeatureCard(
+                      icon: FontAwesomeIcons.magnifyingGlass,
+                      title: 'Smart Search',
+                      description: 'Find destinations with powerful filters.',
+                      color: const Color(0xFF388E3C),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildFeatureCard(
+                      icon: FontAwesomeIcons.earthAsia,
+                      title: 'Region Explorer',
+                      description: 'Explore 17 regions with detailed guides.',
+                      color: const Color(0xFFFBC02D),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildFeatureCard(
+                      icon: FontAwesomeIcons.calendar,
+                      title: 'Festival Calendar',
+                      description: 'Plan visits around vibrant festivals.',
+                      color: const Color(0xFF8E24AA),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildFeatureCard(
+                      icon: FontAwesomeIcons.utensils,
+                      title: 'Local Cuisine',
+                      description: 'Discover authentic Filipino dining.',
+                      color: const Color(0xFFE64A19),
+                    ),
+                  ],
+                )
+              : Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildFeatureCard(
+                          icon: FontAwesomeIcons.mapLocationDot,
+                          title: 'Interactive Maps',
+                          description:
+                              'Navigate with detailed maps and real-time location.',
+                          color: const Color(0xFF0288D1),
+                        ),
+                        const SizedBox(width: 40),
+                        _buildFeatureCard(
+                          icon: FontAwesomeIcons.heart,
+                          title: 'Save Favorites',
+                          description:
+                              'Bookmark destinations for easy planning.',
+                          color: const Color(0xFFD81B60),
+                        ),
+                        const SizedBox(width: 40),
+                        _buildFeatureCard(
+                          icon: FontAwesomeIcons.magnifyingGlass,
+                          title: 'Smart Search',
+                          description:
+                              'Find destinations with powerful filters.',
+                          color: const Color(0xFF388E3C),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 60),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildFeatureCard(
+                          icon: FontAwesomeIcons.earthAsia,
+                          title: 'Region Explorer',
+                          description:
+                              'Explore 17 regions with detailed guides.',
+                          color: const Color(0xFFFBC02D),
+                        ),
+                        const SizedBox(width: 40),
+                        _buildFeatureCard(
+                          icon: FontAwesomeIcons.calendar,
+                          title: 'Festival Calendar',
+                          description: 'Plan visits around vibrant festivals.',
+                          color: const Color(0xFF8E24AA),
+                        ),
+                        const SizedBox(width: 40),
+                        _buildFeatureCard(
+                          icon: FontAwesomeIcons.utensils,
+                          title: 'Local Cuisine',
+                          description: 'Discover authentic Filipino dining.',
+                          color: const Color(0xFFE64A19),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+        ],
+      ),
+    );
   }
 
   Widget _buildFeatureCard({
@@ -1785,399 +1745,382 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
 
   Widget _buildVideoSection() {
     final isMobile = MediaQuery.of(context).size.width < 800;
-    return FadeTransition(
-      opacity: _videoFadeAnimation,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.3),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(
-            parent: _videoController, curve: Curves.easeOutCubic)),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-              vertical: isMobile ? 48 : 96, horizontal: isMobile ? 16 : 40),
-          decoration: const BoxDecoration(color: Colors.white),
-          child: isMobile
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
-                      ).createShader(bounds),
-                      child: Text(
-                        'See the App in Action',
-                        style: GoogleFonts.poppins(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+    return Container(
+      padding: EdgeInsets.symmetric(
+          vertical: isMobile ? 48 : 96, horizontal: isMobile ? 16 : 40),
+      decoration: const BoxDecoration(color: Colors.white),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+                  ).createShader(bounds),
+                  child: Text(
+                    'See the App in Action',
+                    style: GoogleFonts.poppins(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Watch how Discover Philippines simplifies travel planning with stunning destinations.',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        color: Colors.grey[700],
-                        height: 1.6,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF0288D1).withOpacity(0.1),
-                            const Color(0xFF42A5F5).withOpacity(0.05),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color(0xFF0288D1).withOpacity(0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        'Join thousands of travelers today!',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF0288D1),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Center(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            height: 500,
-                            child: FutureBuilder(
-                              future: _initializeVideoPlayerFuture,
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.done) {
-                                  if (snapshot.error != null) {
-                                    return Text(
-                                        'Error loading video: ${snapshot.error}');
-                                  }
-                                  return AspectRatio(
-                                    aspectRatio: _controller.value.aspectRatio,
-                                    child: VideoPlayer(_controller),
-                                  );
-                                } else {
-                                  return CircularProgressIndicator();
-                                }
-                              },
-                            ),
-                          ),
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            onEnter: (_) {
-                              setState(() {
-                                _isButtonVisible = true;
-                              });
-                              _startHideButtonTimer();
-                            },
-                            onExit: (_) {
-                              setState(() {
-                                _isButtonVisible = false;
-                              });
-                              _hideButtonTimer?.cancel();
-                            },
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _isButtonVisible = true;
-                                  if (_controller.value.isPlaying) {
-                                    _controller.pause();
-                                  } else {
-                                    _controller.play();
-                                  }
-                                });
-                                _startHideButtonTimer();
-                              },
-                              child: AnimatedOpacity(
-                                opacity: _isButtonVisible ? 1.0 : 0.0,
-                                duration: const Duration(milliseconds: 300),
-                                child: AnimatedBuilder(
-                                  animation: _pulseController,
-                                  builder: (context, child) {
-                                    return Transform.scale(
-                                      scale: _pulseAnimation.value,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(24),
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.black.withOpacity(0.6),
-                                              Colors.black.withOpacity(0.4),
-                                            ],
-                                          ),
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.black.withOpacity(0.3),
-                                              blurRadius: 15,
-                                              offset: const Offset(0, 5),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Icon(
-                                          _controller.value.isPlaying
-                                              ? FontAwesomeIcons.pause
-                                              : FontAwesomeIcons.play,
-                                          color: Colors.white,
-                                          size: 60,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
-                            ).createShader(bounds),
-                            child: Text(
-                              'See the App in Action',
-                              style: GoogleFonts.poppins(
-                                fontSize: 44,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'Watch how Discover Philippines simplifies travel planning with stunning destinations.',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              color: Colors.grey[700],
-                              height: 1.6,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 12),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  const Color(0xFF0288D1).withOpacity(0.1),
-                                  const Color(0xFF42A5F5).withOpacity(0.05),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(25),
-                              border: Border.all(
-                                color: const Color(0xFF0288D1).withOpacity(0.2),
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              'Join thousands of travelers today!',
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF0288D1),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 80),
-                    Expanded(
-                      flex: 1,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            height: 800,
-                            child: FutureBuilder(
-                              future: _initializeVideoPlayerFuture,
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.done) {
-                                  if (snapshot.error != null) {
-                                    return Text(
-                                        'Error loading video: ${snapshot.error}');
-                                  }
-                                  return AspectRatio(
-                                    aspectRatio: _controller.value.aspectRatio,
-                                    child: VideoPlayer(_controller),
-                                  );
-                                } else {
-                                  return CircularProgressIndicator();
-                                }
-                              },
-                            ),
-                          ),
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            onEnter: (_) {
-                              setState(() {
-                                _isButtonVisible = true;
-                              });
-                              _startHideButtonTimer();
-                            },
-                            onExit: (_) {
-                              setState(() {
-                                _isButtonVisible = false;
-                              });
-                              _hideButtonTimer?.cancel();
-                            },
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _isButtonVisible = true;
-                                  if (_controller.value.isPlaying) {
-                                    _controller.pause();
-                                  } else {
-                                    _controller.play();
-                                  }
-                                });
-                                _startHideButtonTimer();
-                              },
-                              child: AnimatedOpacity(
-                                opacity: _isButtonVisible ? 1.0 : 0.0,
-                                duration: const Duration(milliseconds: 300),
-                                child: AnimatedBuilder(
-                                  animation: _pulseController,
-                                  builder: (context, child) {
-                                    return Transform.scale(
-                                      scale: _pulseAnimation.value,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(24),
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.black.withOpacity(0.6),
-                                              Colors.black.withOpacity(0.4),
-                                            ],
-                                          ),
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.black.withOpacity(0.3),
-                                              blurRadius: 15,
-                                              offset: const Offset(0, 5),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Icon(
-                                          _controller.value.isPlaying
-                                              ? FontAwesomeIcons.pause
-                                              : FontAwesomeIcons.play,
-                                          color: Colors.white,
-                                          size: 60,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-        ),
-      ),
+                const SizedBox(height: 20),
+                Text(
+                  'Watch how Discover Philippines simplifies travel planning with stunning destinations.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    color: Colors.grey[700],
+                    height: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF0288D1).withOpacity(0.1),
+                        const Color(0xFF42A5F5).withOpacity(0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF0288D1).withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    'Join thousands of travelers today!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF0288D1),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Center(
+                  child: RepaintBoundary(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          height: 500,
+                          child: FutureBuilder(
+                            future: _initializeVideoPlayerFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                if (snapshot.error != null) {
+                                  return Text(
+                                      'Error loading video: ${snapshot.error}');
+                                }
+                                return AspectRatio(
+                                  aspectRatio: _controller.value.aspectRatio,
+                                  child: VideoPlayer(_controller),
+                                );
+                              } else {
+                                return CircularProgressIndicator();
+                              }
+                            },
+                          ),
+                        ),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          onEnter: (_) {
+                            setState(() {
+                              _isButtonVisible = true;
+                            });
+                            _startHideButtonTimer();
+                          },
+                          onExit: (_) {
+                            setState(() {
+                              _isButtonVisible = false;
+                            });
+                            _hideButtonTimer?.cancel();
+                          },
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isButtonVisible = true;
+                                if (_controller.value.isPlaying) {
+                                  _controller.pause();
+                                } else {
+                                  _controller.play();
+                                }
+                              });
+                              _startHideButtonTimer();
+                            },
+                            child: AnimatedOpacity(
+                              opacity: _isButtonVisible ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: AnimatedBuilder(
+                                animation: _pulseController,
+                                builder: (context, child) {
+                                  return Transform.scale(
+                                    scale: _pulseAnimation.value,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(24),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.black.withOpacity(0.6),
+                                            Colors.black.withOpacity(0.4),
+                                          ],
+                                        ),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.3),
+                                            blurRadius: 15,
+                                            offset: const Offset(0, 5),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        _controller.value.isPlaying
+                                            ? FontAwesomeIcons.pause
+                                            : FontAwesomeIcons.play,
+                                        color: Colors.white,
+                                        size: 60,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+                        ).createShader(bounds),
+                        child: Text(
+                          'See the App in Action',
+                          style: GoogleFonts.poppins(
+                            fontSize: 44,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Watch how Discover Philippines simplifies travel planning with stunning destinations.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          color: Colors.grey[700],
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF0288D1).withOpacity(0.1),
+                              const Color(0xFF42A5F5).withOpacity(0.05),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                            color: const Color(0xFF0288D1).withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          'Join thousands of travelers today!',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF0288D1),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 80),
+                Expanded(
+                  flex: 1,
+                  child: RepaintBoundary(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          height: 800,
+                          child: FutureBuilder(
+                            future: _initializeVideoPlayerFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                if (snapshot.error != null) {
+                                  return Text(
+                                      'Error loading video: ${snapshot.error}');
+                                }
+                                return AspectRatio(
+                                  aspectRatio: _controller.value.aspectRatio,
+                                  child: VideoPlayer(_controller),
+                                );
+                              } else {
+                                return CircularProgressIndicator();
+                              }
+                            },
+                          ),
+                        ),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          onEnter: (_) {
+                            setState(() {
+                              _isButtonVisible = true;
+                            });
+                            _startHideButtonTimer();
+                          },
+                          onExit: (_) {
+                            setState(() {
+                              _isButtonVisible = false;
+                            });
+                            _hideButtonTimer?.cancel();
+                          },
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isButtonVisible = true;
+                                if (_controller.value.isPlaying) {
+                                  _controller.pause();
+                                } else {
+                                  _controller.play();
+                                }
+                              });
+                              _startHideButtonTimer();
+                            },
+                            child: AnimatedOpacity(
+                              opacity: _isButtonVisible ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: AnimatedBuilder(
+                                animation: _pulseController,
+                                builder: (context, child) {
+                                  return Transform.scale(
+                                    scale: _pulseAnimation.value,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(24),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.black.withOpacity(0.6),
+                                            Colors.black.withOpacity(0.4),
+                                          ],
+                                        ),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.3),
+                                            blurRadius: 15,
+                                            offset: const Offset(0, 5),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        _controller.value.isPlaying
+                                            ? FontAwesomeIcons.pause
+                                            : FontAwesomeIcons.play,
+                                        color: Colors.white,
+                                        size: 60,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
   Widget _buildDestinationsSection(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 1000;
-    return FadeTransition(
-      opacity: _featuresController,
-      child: Container(
-        padding:
-            EdgeInsets.symmetric(vertical: 120, horizontal: isMobile ? 16 : 40),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF5F8FF),
-          image: DecorationImage(
-            image: const AssetImage('assets/images/backgrounds/pattern.png'),
-            fit: BoxFit.cover,
-            opacity: 0.05,
-          ),
-        ),
-        child: Column(
-          children: [
-            // NEW: Enhanced section title
-            ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
-              ).createShader(bounds),
-              child: Text(
-                'Top Destinations',
-                style: GoogleFonts.poppins(
-                  fontSize: 44,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              "Explore the Philippines' most stunning locations",
+    return Container(
+      padding:
+          EdgeInsets.symmetric(vertical: 120, horizontal: isMobile ? 16 : 40),
+      child: Column(
+        children: [
+          // NEW: Enhanced section title
+          ShaderMask(
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+            ).createShader(bounds),
+            child: Text(
+              'Top Destinations',
               style: GoogleFonts.poppins(
-                fontSize: 22,
-                color: Colors.grey[800],
-                fontWeight: FontWeight.w400,
+                fontSize: 44,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 60),
-            ..._buildDestinationRows(isMobile),
-            const SizedBox(height: 60),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "Explore the Philippines' most stunning locations",
+            style: GoogleFonts.poppins(
+              fontSize: 22,
+              color: Colors.grey[800],
+              fontWeight: FontWeight.w400,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 60),
+          ..._buildDestinationRows(isMobile),
+          const SizedBox(height: 60),
+        ],
       ),
     );
   }
@@ -3014,20 +2957,15 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
             ],
           ),
           const SizedBox(height: 30),
-          AnimatedSlide(
-            offset: Offset(0, _featuresController.value * -0.2),
-            duration: const Duration(milliseconds: 1200),
-            curve: Curves.easeOutCubic,
-            child: Text(
-              'All rights reserved. © ${DateTime.now().year}',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.white.withOpacity(0.8),
-                fontWeight: FontWeight.w400,
-              ),
+          Text(
+            'All rights reserved. © ${DateTime.now().year}',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: Colors.white.withOpacity(0.8),
+              fontWeight: FontWeight.w400,
             ),
-          ),
+          )
         ],
       ),
     );
