@@ -16,6 +16,7 @@
   <link rel="canonical" href="https://discover-philippines.com/">
   <!-- Hreflang alternates (extend if you add more locales) -->
   <link rel="alternate" href="https://discover-philippines.com/" hreflang="en">
+  <link rel="alternate" href="https://discover-philippines.com/" hreflang="en-PH">
   <link rel="alternate" href="https://discover-philippines.com/" hreflang="x-default">
   
   <!-- Favicon -->
@@ -56,6 +57,53 @@
       "target": "https://discover-philippines.com/search?q={search_term_string}",
       "query-input": "required name=search_term_string"
     }
+  }
+  </script>
+  <!-- Organization schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Discover Philippines",
+    "url": "https://discover-philippines.com",
+    "logo": "https://discover-philippines.com/icons/Icon-512.png",
+    "sameAs": [
+      "https://www.instagram.com/_discoverphilippines/",
+      "https://www.tiktok.com/@_discoverphilippines"
+    ]
+  }
+  </script>
+  <!-- FAQ schema: helps rank for travel guide queries -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the best time to travel to the Philippines?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The dry season from November to May is generally best for island hopping and beach destinations."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the top destinations in the Philippines?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Popular destinations include Palawan, Boracay, Bohol (Chocolate Hills), Siargao, Cebu, and Banaue Rice Terraces."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need a visa to travel to the Philippines?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Visa requirements vary by nationality. Many countries receive a 30-day visa-free entry; always check current immigration rules."
+        }
+      }
+    ]
   }
   </script>
   

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 import 'package:lakbay_pinas/widgets/touchable_widget.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:video_player/video_player.dart';
@@ -215,6 +216,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
     super.dispose();
   }
 
+  final scrollController = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -319,7 +322,7 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
       child: FadeTransition(
         opacity: _heroFadeAnimation,
         child: Container(
-          height: isMobile ? 1750 : 850,
+          height: isMobile ? 1750 : 900,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -336,8 +339,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
           child: Stack(
             children: [
               // Minimal parallax background effect for better performance
-              RepaintBoundary(
-                child: Positioned.fill(
+              Positioned.fill(
+                child: RepaintBoundary(
                   child: Transform.translate(
                     offset: Offset(0, _scrollOffset * 0.2),
                     child: AnimatedBuilder(
@@ -1140,6 +1143,56 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 ),
                               ],
                             ),
+
+                      // SEO: Internal links to topic pages for stronger crawl signals
+                      const SizedBox(height: 28),
+                      Scrollbar(
+                        controller: scrollController,
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            spacing: 12,
+                            children: [
+                              _topicLinkButton(
+                                icon: Icons.calendar_month,
+                                label: 'Best time to visit the Philippines',
+                                route: '/best-time',
+                              ),
+                              _topicLinkButton(
+                                icon: Icons.assignment_turned_in,
+                                label: 'Philippines visa requirements',
+                                route: '/visa',
+                              ),
+                              _topicLinkButton(
+                                icon: Icons.travel_explore,
+                                label: 'Best islands in the Philippines',
+                                route: '/islands',
+                              ),
+                              _topicLinkButton(
+                                icon: Icons.celebration,
+                                label: 'Philippine festivals',
+                                route: '/festivals',
+                              ),
+                              _topicLinkButton(
+                                icon: Icons.restaurant_menu,
+                                label: 'Filipino food guide',
+                                route: '/food',
+                              ),
+                              _topicLinkButton(
+                                icon: Icons.route,
+                                label: '7/10/14‑day itineraries',
+                                route: '/itineraries',
+                              ),
+                              _topicLinkButton(
+                                icon: Icons.security,
+                                label: 'Safety & budget tips',
+                                route: '/safety-budget',
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1255,6 +1308,56 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _topicLinkButton({
+    required IconData icon,
+    required String label,
+    required String route,
+  }) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+    final background = MaterialStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(MaterialState.pressed)) {
+        return Colors.white.withOpacity(0.22);
+      }
+      if (states.contains(MaterialState.hovered) ||
+          states.contains(MaterialState.focused)) {
+        return Colors.white.withOpacity(0.18);
+      }
+      return Colors.white.withOpacity(0.12);
+    });
+
+    final foreground = MaterialStateProperty.all<Color>(Colors.white);
+
+    return Tooltip(
+      message: label,
+      child: FilledButton.icon(
+        onPressed: () => Get.toNamed(route),
+        icon: Icon(icon, size: isMobile ? 18 : 20),
+        label: Text(
+          label,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        style: FilledButton.styleFrom(
+          minimumSize: Size(0, isMobile ? 38 : 42),
+          padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 12 : 16, vertical: isMobile ? 10 : 12),
+          foregroundColor: Colors.white,
+          textStyle: GoogleFonts.poppins(
+            fontSize: isMobile ? 12 : 14,
+            fontWeight: FontWeight.w600,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(26),
+            side: BorderSide(color: Colors.white.withOpacity(0.25), width: 1),
+          ),
+        ).copyWith(
+          backgroundColor: background,
+          foregroundColor: foreground,
+        ),
+      ),
     );
   }
 
