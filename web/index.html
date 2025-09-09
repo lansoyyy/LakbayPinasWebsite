@@ -40,8 +40,11 @@
   <meta name="twitter:site" content="@discoverph">
   
   <!-- Network performance hints -->
-  <link rel="preconnect" href="https://discover-philippines.com" crossorigin>
-  <link rel="dns-prefetch" href="//discover-philippines.com">
+  <link rel="preload" href="main.dart.js" as="script">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="//fonts.googleapis.com">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Regular&display=swap" as="style">
   <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
 
   <!-- Schema.org structured data -->
@@ -115,7 +118,6 @@
   <meta name="apple-mobile-web-app-title" content="Discover Philippines">
   
   <!-- Preload critical resources -->
-  <link rel="preload" href="main.dart.js" as="script">
   
   <!-- Base href for proper routing -->
   <base href="$FLUTTER_BASE_HREF">
@@ -177,5 +179,12 @@
   </script>
   
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
 </body>
 </html>

@@ -1089,15 +1089,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 _buildEnhancedStoreButton(
                                   store: 'google',
                                   onPressed: () async {
-                                    if (userLocationData!['country'] ==
-                                            'Philippines' ||
-                                        userLocationData!['country'] == 'PH') {
-                                      launchUrlString(
-                                          'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
-                                    } else {
-                                      launchUrlString(
-                                          'https://play.google.com/store/apps/details?id=com.algovision.phdiscover');
-                                    }
+                                    launchUrlString(
+                                        'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                   },
                                 ),
                                 const SizedBox(height: 20),
@@ -1119,15 +1112,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                                 _buildEnhancedStoreButton(
                                   store: 'google',
                                   onPressed: () async {
-                                    if (userLocationData!['country'] ==
-                                            'Philippines' ||
-                                        userLocationData!['country'] == 'PH') {
-                                      launchUrlString(
-                                          'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
-                                    } else {
-                                      launchUrlString(
-                                          'https://play.google.com/store/apps/details?id=com.algovision.phdiscover');
-                                    }
+                                    launchUrlString(
+                                        'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                   },
                                 ),
                                 const SizedBox(width: 32),
@@ -2796,15 +2782,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                             _buildEnhancedStoreButton(
                                 store: 'google',
                                 onPressed: () {
-                                  if (userLocationData!['country'] ==
-                                          'Philippines' ||
-                                      userLocationData!['country'] == 'PH') {
-                                    launchUrlString(
-                                        'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
-                                  } else {
-                                    launchUrlString(
-                                        'https://play.google.com/store/apps/details?id=com.algovision.phdiscover');
-                                  }
+                                  launchUrlString(
+                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                 }),
                             const SizedBox(height: 16),
                             _buildEnhancedStoreButton(
@@ -2825,15 +2804,8 @@ class _PromotionalWebsiteScreenState extends State<PromotionalWebsiteScreen>
                             _buildEnhancedStoreButton(
                                 store: 'google',
                                 onPressed: () {
-                                  if (userLocationData!['country'] ==
-                                          'Philippines' ||
-                                      userLocationData!['country'] == 'PH') {
-                                    launchUrlString(
-                                        'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
-                                  } else {
-                                    launchUrlString(
-                                        'https://play.google.com/store/apps/details?id=com.algovision.phdiscover');
-                                  }
+                                  launchUrlString(
+                                      'https://play.google.com/store/apps/details?id=com.algovision.discoverph');
                                 }),
                             const SizedBox(width: 24),
                             _buildEnhancedStoreButton(

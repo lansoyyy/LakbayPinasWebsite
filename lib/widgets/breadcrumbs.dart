@@ -11,7 +11,10 @@ class BreadcrumbItem {
 class Breadcrumbs extends StatelessWidget {
   final List<BreadcrumbItem> items;
   final EdgeInsetsGeometry padding;
-  const Breadcrumbs({super.key, required this.items, this.padding = const EdgeInsets.only(bottom: 12)});
+  const Breadcrumbs(
+      {super.key,
+      required this.items,
+      this.padding = const EdgeInsets.only(bottom: 12)});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +31,8 @@ class Breadcrumbs extends StatelessWidget {
             for (int i = 0; i < items.length; i++) ...[
               _crumb(context, items[i], isMobile),
               if (i != items.length - 1)
-                Icon(Icons.chevron_right, size: isMobile ? 16 : 18, color: Colors.grey[600]),
+                Icon(Icons.chevron_right,
+                    size: isMobile ? 16 : 18, color: Colors.grey[600]),
             ],
           ],
         ),
